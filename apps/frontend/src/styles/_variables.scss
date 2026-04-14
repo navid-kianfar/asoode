@@ -1,0 +1,82 @@
+// Color Variables — matching Angular Material deep-purple-amber
+$primary: #673AB7;
+$primary-light: #9575CD;
+$primary-dark: #512DA8;
+$accent: #FFC107;
+$warn: #F44336;
+$success: #4CAF50;
+$info: #2196F3;
+
+$background: #fafafa;
+$surface: #ffffff;
+$text-primary: rgba(0, 0, 0, 0.87);
+$text-secondary: rgba(0, 0, 0, 0.54);
+$text-disabled: rgba(0, 0, 0, 0.38);
+$divider: rgba(0, 0, 0, 0.12);
+
+// Dark theme colors
+$dark-background: #303030;
+$dark-surface: #424242;
+$dark-text-primary: rgba(255, 255, 255, 0.87);
+$dark-text-secondary: rgba(255, 255, 255, 0.54);
+$dark-divider: rgba(255, 255, 255, 0.12);
+
+// Spacing
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+
+// Border radius
+$border-radius-sm: 4px;
+$border-radius-md: 8px;
+$border-radius-lg: 16px;
+
+// Breakpoints
+$breakpoint-xs: 0;
+$breakpoint-sm: 600px;
+$breakpoint-md: 960px;
+$breakpoint-lg: 1280px;
+$breakpoint-xl: 1920px;
+
+// Shadows
+$shadow-1: 0 2px 1px -1px rgba(0, 0, 0, 0.2), 0 1px 1px 0 rgba(0, 0, 0, 0.14), 0 1px 3px 0 rgba(0, 0, 0, 0.12);
+$shadow-2: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
+$shadow-4: 0 2px 4px -1px rgba(0, 0, 0, 0.2), 0 4px 5px 0 rgba(0, 0, 0, 0.14), 0 1px 10px 0 rgba(0, 0, 0, 0.12);
+
+// Status / Semantic colors (dashboard charts, legends, etc.)
+$color-blocked: #ee6285;
+$color-done: #74d68c;
+$color-created: #59a8ef;
+$color-total: #b977f7;
+$color-today: #2a70b6;
+$color-upcoming: #fef386;
+$color-warning: #fbbf24;
+$color-ok: #4ade80;
+
+// Common UI colors
+$color-border: #e6e6e6;
+$color-muted: #999999;
+$color-text-dark: #333;
+$color-text-medium: #444;
+$color-text-light: #666;
+$color-bg-section: #f2f2f2;
+$color-bg-card: #ffffff;
+
+// Dark theme - dashboard
+$dark-card: #3b3b3b;
+$dark-card-inner: #444;
+$dark-border: #555;
+$dark-text-muted: #888;
+$dark-text-light: #ccc;
+$dark-text-bright: #ddd;
+
+// Transitions
+$transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+$transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+
+// Responsive mixins
+@mixin mobile { @media (max-width: $breakpoint-sm) { @content; } }
+@mixin tablet { @media (max-width: $breakpoint-md) { @content; } }
+@mixin small-phone { @media (max-width: 400px) { @content; } }

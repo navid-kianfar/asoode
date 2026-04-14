@@ -1,0 +1,122 @@
+<!-- subject: نظر جدید روی {{taskTitle}} — آسوده -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="fa" dir="rtl">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>نظر جدید</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f0f2f5; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f0f2f5;" dir="rtl">
+    <tr>
+      <td align="center" style="padding: 40px 20px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #7b68ee 0%, #6c5ce7 100%); padding: 32px 40px; text-align: center;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td align="center">
+                    <span style="font-family: Inter, Arial, Helvetica, sans-serif; font-size: 28px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px;">Asoode</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <!-- Body -->
+          <tr>
+            <td style="padding: 48px 40px 16px 40px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td style="font-family: Inter, Arial, Helvetica, sans-serif; font-size: 24px; font-weight: 700; color: #333333; padding-bottom: 16px; line-height: 1.3; text-align: right;">
+                    نظر جدید روی وظیفه شما
+                  </td>
+                </tr>
+                <tr>
+                  <td style="font-family: Inter, Arial, Helvetica, sans-serif; font-size: 15px; color: #555555; line-height: 1.7; padding-bottom: 8px; text-align: right;">
+                    سلام {{firstName}}،
+                  </td>
+                </tr>
+                <tr>
+                  <td style="font-family: Inter, Arial, Helvetica, sans-serif; font-size: 15px; color: #555555; line-height: 1.7; padding-bottom: 32px; text-align: right;">
+                    <strong style="color: #333333;">{{commenterName}}</strong> روی <strong style="color: #333333;">{{taskTitle}}</strong> نظر گذاشته است.
+                  </td>
+                </tr>
+              </table>
+              <!-- Comment Preview Card -->
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td style="background-color: #f8f9fa; border-right: 4px solid #7b68ee; border-radius: 4px; padding: 20px 24px;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                      <tr>
+                        <td style="padding-bottom: 8px; text-align: right;">
+                          <span style="font-family: Inter, Arial, Helvetica, sans-serif; font-size: 13px; font-weight: 600; color: #7b68ee;">{{commenterName}}</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="font-family: Inter, Arial, Helvetica, sans-serif; font-size: 14px; color: #555555; line-height: 1.7; font-style: italic; text-align: right;">
+                          "{{commentPreview}}"
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              <!-- Task Context -->
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td style="padding-top: 16px; padding-bottom: 8px; text-align: right;">
+                    <span style="font-family: Inter, Arial, Helvetica, sans-serif; font-size: 12px; color: #999999;">
+                      روی وظیفه: <strong style="color: #666666;">{{taskTitle}}</strong>
+                    </span>
+                  </td>
+                </tr>
+              </table>
+              <!-- Spacer -->
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td style="padding-top: 24px;">&nbsp;</td>
+                </tr>
+              </table>
+              <!-- CTA -->
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td align="center" style="padding-bottom: 16px;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td align="center" style="background-color: #7b68ee; border-radius: 8px;">
+                          <a href="{{taskUrl}}" target="_blank" style="display: inline-block; font-family: Inter, Arial, Helvetica, sans-serif; font-size: 15px; font-weight: 600; color: #ffffff; text-decoration: none; padding: 14px 36px; line-height: 20px;">مشاهده نظر</a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="padding-bottom: 40px;">
+                    <span style="font-family: Inter, Arial, Helvetica, sans-serif; font-size: 13px; color: #999999;">یا این لینک را در مرورگر خود کپی و جای‌گذاری کنید:<br />
+                    <a href="{{taskUrl}}" style="color: #7b68ee; text-decoration: underline; word-break: break-all; direction: ltr; unicode-bidi: embed;">{{taskUrl}}</a></span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f8f9fa; padding: 24px 40px; border-top: 1px solid #eef0f3;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td align="center" style="font-family: Inter, Arial, Helvetica, sans-serif; font-size: 12px; color: #999999; line-height: 1.6;">
+                    &copy; {{year}} Asoode. تمامی حقوق محفوظ است.<br />
+                    این ایمیل به دلیل عضویت شما در این وظیفه در آسوده ارسال شده است.<br />
+                    <a href="{{unsubscribeUrl}}" style="color: #7b68ee; text-decoration: underline;">لغو اشتراک</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

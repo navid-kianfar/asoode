@@ -1,0 +1,17 @@
+{
+  "name": "asoode",
+  "private": true,
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["sharp"]
+  },
+  "devDependencies": {
+    "sharp": "^0.34.5",
+    "turbo": "^2.0.0",
+    "typescript": "^5.5.0"
+  }
+}

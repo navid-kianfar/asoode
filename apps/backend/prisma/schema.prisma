@@ -1,0 +1,850 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── USERS ───────────────────────────────────────────────────
+model User {
+  id                String    @id @default(uuid()) @db.Uuid
+  email             String    @unique
+  username          String    @unique
+  passwordHash      String
+  firstName         String    @default("")
+  lastName          String    @default("")
+  bio               String    @default("")
+  avatar            String?
+  phone             String?
+  darkMode          Boolean   @default(false)
+  timeZone          String    @default("UTC")
+  calendar          Int       @default(0)
+  userType          Int       @default(0)
+  emailConfirmed    Boolean   @default(false)
+  phoneConfirmed    Boolean   @default(false)
+  workingGroupId    String?   @db.Uuid
+  workingProjectId  String?   @db.Uuid
+  workingPackageId  String?   @db.Uuid
+  workingTaskId     String?   @db.Uuid
+  workingGroupFrom  DateTime?
+  workingTaskFrom   DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  devices            Device[]
+  pushSubscriptions  PushSubscription[]
+  groupMembers       GroupMember[]
+  projectMembers     ProjectMember[]
+  workPackageMembers WorkPackageMember[]
+  taskMembers        TaskMember[]
+  taskComments       TaskComment[]
+  taskVotes          TaskVote[]
+  taskTimeSpents     TaskTimeSpent[]
+  conversations      Conversation[]
+  channelMembers     ChannelMember[]
+  ownedGroups          Group[]            @relation("GroupOwner")
+  ownedProjects        Project[]          @relation("ProjectOwner")
+  activityLogs         ActivityLog[]
+  fileEntries          FileEntry[]
+  workEntries          WorkEntry[]
+  timeOffs             TimeOff[]
+  verificationTokens   VerificationToken[]
+  workflows            Workflow[]
+  workflowExecutions   WorkflowExecution[]
+
+  @@map("users")
+}
+
+model Device {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  title     String
+  os        String   @default("")
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("devices")
+}
+
+// ─── PUSH SUBSCRIPTIONS ─────────────────────────────────────
+model PushSubscription {
+  id             String    @id @default(uuid()) @db.Uuid
+  userId         String    @db.Uuid
+  endpoint       String    @unique
+  auth           String
+  p256dh         String
+  expirationTime DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("push_subscriptions")
+}
+
+// ─── VERIFICATION TOKENS ─────────────────────────────────────
+model VerificationToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  code      String   // 6-digit OTP
+  type      Int      // 1=email_verify, 2=password_reset, 3=phone_verify
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("verification_tokens")
+}
+
+// ─── CAPTCHA CHALLENGES ──────────────────────────────────────
+model CaptchaChallenge {
+  id         String   @id @default(uuid()) @db.Uuid
+  prefix     String
+  difficulty Int      @default(4)
+  expiresAt  DateTime
+  used       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@map("captcha_challenges")
+}
+
+// ─── GROUPS ──────────────────────────────────────────────────
+model Group {
+  id                 String    @id @default(uuid()) @db.Uuid
+  userId             String    @db.Uuid
+  parentId           String?   @db.Uuid
+  rootId             String?   @db.Uuid
+  type               Int       @default(8) // GroupType
+  title              String
+  subTitle           String    @default("")
+  brandTitle         String    @default("")
+  description        String    @default("")
+  avatar             String?
+  email              String    @default("")
+  website            String    @default("")
+  postalCode         String    @default("")
+  address            String    @default("")
+  tel                String    @default("")
+  fax                String    @default("")
+  geoLocation        String?
+  nationalId         String    @default("")
+  registrationId     String    @default("")
+  supervisorName     String    @default("")
+  supervisorNumber   String    @default("")
+  responsibleName    String    @default("")
+  responsibleNumber  String    @default("")
+  premium            Boolean   @default(false)
+  complex            Boolean   @default(false)
+  archivedAt         DateTime?
+  membersCapacity    Int       @default(100)
+  membersUsed        Int       @default(0)
+  diskSpaceCapacity  BigInt    @default(10737418240) // 10GB
+  diskSpaceUsed      BigInt    @default(0)
+  attachmentSize     BigInt    @default(10485760) // 10MB
+  offices            Int       @default(0)
+  employees          Int       @default(0)
+  registeredAt       DateTime?
+  expireAt           DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  owner    User         @relation("GroupOwner", fields: [userId], references: [id])
+  parent   Group?       @relation("GroupHierarchy", fields: [parentId], references: [id])
+  children Group[]      @relation("GroupHierarchy")
+  members  GroupMember[]
+  projects Project[]
+  shifts   Shift[]
+  timeOffs TimeOff[]
+  workEntries WorkEntry[]
+
+  @@map("groups")
+}
+
+model GroupMember {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  groupId   String   @db.Uuid
+  access    Int      @default(4) // AccessType
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, groupId])
+  @@map("group_members")
+}
+
+// ─── PENDING INVITATIONS ─────────────────────────────────────
+model PendingInvitation {
+  id         String   @id @default(uuid()) @db.Uuid
+  identifier String   // email or username
+  recordId   String   @db.Uuid // group/project/wp id
+  access     Int      @default(4)
+  entityType String   // 'group' | 'project' | 'work_package'
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("pending_invitations")
+}
+
+// ─── PROJECTS ────────────────────────────────────────────────
+model Project {
+  id                String    @id @default(uuid()) @db.Uuid
+  userId            String    @db.Uuid
+  groupId           String?   @db.Uuid
+  title             String
+  description       String    @default("")
+  template          Int       @default(0) // ProjectTemplate
+  complex           Boolean   @default(false)
+  premium           Boolean   @default(false)
+  archivedAt        DateTime?
+  membersCapacity   Int       @default(100)
+  membersUsed       Int       @default(0)
+  diskSpaceCapacity BigInt    @default(10737418240)
+  diskSpaceUsed     BigInt    @default(0)
+  attachmentSize    BigInt    @default(10485760)
+  tasks             Int       @default(0)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  owner        User              @relation("ProjectOwner", fields: [userId], references: [id])
+  group        Group?            @relation(fields: [groupId], references: [id])
+  members      ProjectMember[]
+  subProjects  SubProject[]
+  seasons      ProjectSeason[]
+  objectives   WorkPackageObjective[]
+  workPackages WorkPackage[]
+  workflows    Workflow[]
+
+  @@map("projects")
+}
+
+model ProjectMember {
+  id        String   @id @default(uuid()) @db.Uuid
+  recordId  String   @db.Uuid // userId or groupId
+  projectId String   @db.Uuid
+  access    Int      @default(4)
+  isGroup   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User?   @relation(fields: [recordId], references: [id])
+
+  @@unique([recordId, projectId])
+  @@map("project_members")
+}
+
+model SubProject {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @db.Uuid
+  projectId   String   @db.Uuid
+  parentId    String?  @db.Uuid
+  title       String
+  description String   @default("")
+  level       Int      @default(0)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("sub_projects")
+}
+
+model ProjectSeason {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @db.Uuid
+  projectId   String   @db.Uuid
+  title       String
+  description String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("project_seasons")
+}
+
+// ─── WORK PACKAGES ───────────────────────────────────────────
+model WorkPackage {
+  id            String   @id @default(uuid()) @db.Uuid
+  userId        String   @db.Uuid
+  projectId     String   @db.Uuid
+  subProjectId  String?  @db.Uuid
+  title         String
+  description   String   @default("")
+  order         Int      @default(0)
+  color         String   @default("#4caf50")
+  darkColor     Boolean  @default(false)
+  boardTemplate Int      @default(5) // BoardTemplate.Kanban
+
+  // Sort settings
+  listsSort       Int @default(0)
+  tasksSort       Int @default(0)
+  subTasksSort    Int @default(0)
+  attachmentsSort Int @default(0)
+
+  // Permission booleans
+  permissionComment          Int     @default(2) // WorkPackageCommentPermission
+  permissionEditAttachment   Int     @default(1)
+  permissionCreateAttachment Int     @default(1)
+  permissionAssignMembers    Int     @default(1)
+  permissionAssignLabels     Int     @default(1)
+  permissionChangeTaskState  Int     @default(1)
+  permissionEditTask         Int     @default(1)
+  permissionArchiveTask      Int     @default(1)
+  permissionCreateTask       Int     @default(1)
+  permissionArchiveList      Int     @default(1)
+  permissionEditList         Int     @default(1)
+  permissionCreateList       Int     @default(1)
+  permissionClearList        Int     @default(1)
+
+  // Allow toggles
+  taskVisibility           Int     @default(1)
+  allowAttachment          Boolean @default(true)
+  allowBlockingBoardTasks  Boolean @default(true)
+  allowComments            Boolean @default(true)
+  allowCustomField         Boolean @default(false)
+  allowEndAt               Boolean @default(true)
+  allowEstimatedTime       Boolean @default(true)
+  allowGeoLocation         Boolean @default(false)
+  allowLabels              Boolean @default(true)
+  allowMembers             Boolean @default(true)
+  allowPoll                Boolean @default(true)
+  allowSegments            Boolean @default(false)
+  allowState               Boolean @default(true)
+  allowTimeSpent           Boolean @default(true)
+
+  // Dates
+  beginAt       DateTime?
+  endAt         DateTime?
+  actualBeginAt DateTime?
+  actualEndAt   DateTime?
+  archivedAt    DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  project     Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  members     WorkPackageMember[]
+  labels      WorkPackageLabel[]
+  lists       WorkPackageList[]
+  objectives  WorkPackageObjective[]
+  userSettings WorkPackageUserSetting[]
+  customFields CustomField[]
+
+  @@map("work_packages")
+}
+
+model WorkPackageMember {
+  id        String   @id @default(uuid()) @db.Uuid
+  recordId  String   @db.Uuid
+  packageId String   @db.Uuid
+  access    Int      @default(4)
+  isGroup   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workPackage WorkPackage @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  user        User?       @relation(fields: [recordId], references: [id])
+
+  @@unique([recordId, packageId])
+  @@map("work_package_members")
+}
+
+model WorkPackageLabel {
+  id        String   @id @default(uuid()) @db.Uuid
+  packageId String   @db.Uuid
+  title     String
+  color     String   @default("#4caf50")
+  darkColor Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workPackage WorkPackage @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  taskLabels  TaskLabel[]
+
+  @@map("work_package_labels")
+}
+
+model WorkPackageList {
+  id         String    @id @default(uuid()) @db.Uuid
+  packageId  String    @db.Uuid
+  title      String
+  order      Int       @default(0)
+  color      String    @default("")
+  darkColor  Boolean   @default(false)
+  archivedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  workPackage WorkPackage        @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  tasks       WorkPackageTask[]
+
+  @@map("work_package_lists")
+}
+
+model WorkPackageUserSetting {
+  id                  String   @id @default(uuid()) @db.Uuid
+  userId              String   @db.Uuid
+  packageId           String   @db.Uuid
+  projectId           String   @db.Uuid
+  showTotalCards      Boolean  @default(true)
+  receiveNotification Int      @default(1) // ReceiveNotificationType
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  workPackage WorkPackage @relation(fields: [packageId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, packageId])
+  @@map("work_package_user_settings")
+}
+
+model WorkPackageObjective {
+  id          String   @id @default(uuid()) @db.Uuid
+  packageId   String   @db.Uuid
+  projectId   String   @db.Uuid
+  type        Int      @default(1) // WorkPackageObjectiveType
+  title       String
+  description String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workPackage WorkPackage @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  project     Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("work_package_objectives")
+}
+
+model CustomField {
+  id        String   @id @default(uuid()) @db.Uuid
+  packageId String   @db.Uuid
+  title     String
+  type      Int      @default(1)
+  required  Boolean  @default(false)
+  options   String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workPackage WorkPackage      @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  values      CustomFieldValue[]
+
+  @@map("custom_fields")
+}
+
+model CustomFieldValue {
+  id        String   @id @default(uuid()) @db.Uuid
+  fieldId   String   @db.Uuid
+  taskId    String   @db.Uuid
+  value     String   @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  field CustomField     @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  task  WorkPackageTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@unique([fieldId, taskId])
+  @@map("custom_field_values")
+}
+
+// ─── TASKS ───────────────────────────────────────────────────
+model WorkPackageTask {
+  id             String    @id @default(uuid()) @db.Uuid
+  userId         String    @db.Uuid
+  packageId      String    @db.Uuid
+  projectId      String    @db.Uuid
+  subProjectId   String?   @db.Uuid
+  seasonId       String?   @db.Uuid
+  listId         String    @db.Uuid
+  parentId       String?   @db.Uuid
+  title          String
+  description    String    @default("")
+  order          Int       @default(0)
+  state          Int       @default(1) // WorkPackageTaskState
+  geoLocation    String?
+  dueAt          DateTime?
+  beginAt        DateTime?
+  endAt          DateTime?
+  beginReminder  Int       @default(1) // WorkPackageTaskReminderType
+  endReminder    Int       @default(1)
+  archivedAt     DateTime?
+  doneAt         DateTime?
+  doneUserId     String?   @db.Uuid
+  coverUrl       String?
+  coverId        String?   @db.Uuid
+  estimatedTime  Float     @default(0)
+  watching       Boolean   @default(false)
+  restricted     Boolean   @default(false)
+  votePaused     Boolean   @default(false)
+  votePrivate    Boolean   @default(false)
+  voteNecessity  Int       @default(1) // WorkPackageTaskVoteNecessity
+  objectiveValue Int       @default(1) // WorkPackageTaskObjectiveValue
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  list        WorkPackageList      @relation(fields: [listId], references: [id], onDelete: Cascade)
+  parent      WorkPackageTask?     @relation("TaskHierarchy", fields: [parentId], references: [id])
+  subTasks    WorkPackageTask[]    @relation("TaskHierarchy")
+  members     TaskMember[]
+  labels      TaskLabel[]
+  attachments TaskAttachment[]
+  comments    TaskComment[]
+  votes       TaskVote[]
+  timeSpents        TaskTimeSpent[]
+  logs              ActivityLog[]
+  customFieldValues CustomFieldValue[]
+  blockedBy         TaskBlocker[]     @relation("BlockedTask")
+  blocking          TaskBlocker[]     @relation("BlockerTask")
+  relatedFrom       TaskRelation[]    @relation("RelatedFrom")
+  relatedTo         TaskRelation[]    @relation("RelatedTo")
+
+  @@map("work_package_tasks")
+}
+
+model TaskMember {
+  id        String   @id @default(uuid()) @db.Uuid
+  taskId    String   @db.Uuid
+  recordId  String   @db.Uuid
+  isGroup   Boolean  @default(false)
+  packageId String   @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  task WorkPackageTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User?           @relation(fields: [recordId], references: [id])
+
+  @@unique([taskId, recordId])
+  @@map("task_members")
+}
+
+model TaskLabel {
+  id        String   @id @default(uuid()) @db.Uuid
+  taskId    String   @db.Uuid
+  labelId   String   @db.Uuid
+  packageId String   @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  task  WorkPackageTask  @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  label WorkPackageLabel @relation(fields: [labelId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, labelId])
+  @@map("task_labels")
+}
+
+model TaskAttachment {
+  id            String   @id @default(uuid()) @db.Uuid
+  taskId        String   @db.Uuid
+  packageId     String   @db.Uuid
+  projectId     String   @db.Uuid
+  subProjectId  String?  @db.Uuid
+  userId        String   @db.Uuid
+  uploadId      String?
+  title         String
+  description   String   @default("")
+  path          String
+  thumbnailPath String?
+  type          Int      @default(2) // WorkPackageTaskAttachmentType
+  isCover       Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  task              WorkPackageTask          @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  advancedComments  AdvancedPlayerComment[]
+  advancedShapes    AdvancedPlayerShape[]
+
+  @@map("task_attachments")
+}
+
+model TaskComment {
+  id        String   @id @default(uuid()) @db.Uuid
+  taskId    String   @db.Uuid
+  userId    String   @db.Uuid
+  replyId   String?  @db.Uuid
+  private   Boolean  @default(false)
+  message   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  task WorkPackageTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User            @relation(fields: [userId], references: [id])
+
+  @@map("task_comments")
+}
+
+model TaskVote {
+  id           String   @id @default(uuid()) @db.Uuid
+  taskId       String   @db.Uuid
+  userId       String   @db.Uuid
+  vote         Boolean
+  packageId    String   @db.Uuid
+  projectId    String   @db.Uuid
+  subProjectId String?  @db.Uuid
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  task WorkPackageTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User            @relation(fields: [userId], references: [id])
+
+  @@unique([taskId, userId])
+  @@map("task_votes")
+}
+
+model TaskTimeSpent {
+  id           String   @id @default(uuid()) @db.Uuid
+  taskId       String   @db.Uuid
+  userId       String   @db.Uuid
+  packageId    String   @db.Uuid
+  projectId    String   @db.Uuid
+  subProjectId String?  @db.Uuid
+  begin        DateTime
+  end          DateTime?
+  manual       Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  task WorkPackageTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User            @relation(fields: [userId], references: [id])
+
+  @@map("task_time_spents")
+}
+
+model AdvancedPlayerComment {
+  id           String   @id @default(uuid()) @db.Uuid
+  attachmentId String   @db.Uuid
+  userId       String   @db.Uuid
+  startFrame   Int      @default(0)
+  endFrame     Int      @default(0)
+  message      String   @default("")
+  payload      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  attachment TaskAttachment @relation(fields: [attachmentId], references: [id], onDelete: Cascade)
+
+  @@map("advanced_player_comments")
+}
+
+model AdvancedPlayerShape {
+  id           String   @id @default(uuid()) @db.Uuid
+  attachmentId String   @db.Uuid
+  startFrame   Int      @default(0)
+  endFrame     Int      @default(0)
+  payload      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  attachment TaskAttachment @relation(fields: [attachmentId], references: [id], onDelete: Cascade)
+
+  @@map("advanced_player_shapes")
+}
+
+// ─── MESSENGER ───────────────────────────────────────────────
+model Channel {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  type      Int      @default(1) // ChannelType
+  rootId    String?  @db.Uuid
+  title     String   @default("")
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members       ChannelMember[]
+  conversations Conversation[]
+
+  @@map("channels")
+}
+
+model ChannelMember {
+  id        String   @id @default(uuid()) @db.Uuid
+  channelId String   @db.Uuid
+  userId    String   @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@unique([channelId, userId])
+  @@map("channel_members")
+}
+
+model Conversation {
+  id        String   @id @default(uuid()) @db.Uuid
+  channelId String   @db.Uuid
+  userId    String   @db.Uuid
+  message   String   @default("")
+  path      String?
+  type      Int      @default(1) // ConversationType
+  replyId   String?  @db.Uuid
+  fromBot   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@map("conversations")
+}
+
+// ─── FILES ───────────────────────────────────────────────────
+model FileEntry {
+  id               String   @id @default(uuid()) @db.Uuid
+  userId           String   @db.Uuid
+  name             String
+  path             String
+  storageKey       String   @default("")
+  extension        String   @default("")
+  size             BigInt   @default(0)
+  isFolder         Boolean  @default(false)
+  sharedWithUserId String?  @db.Uuid
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("file_entries")
+}
+
+// ─── ATTENDANCE ──────────────────────────────────────────────
+model WorkEntry {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  groupId   String    @db.Uuid
+  begin     DateTime
+  end       DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id])
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@map("work_entries")
+}
+
+model Shift {
+  id        String   @id @default(uuid()) @db.Uuid
+  groupId   String   @db.Uuid
+  title     String
+  type      Int      @default(1) // ShiftType
+  config    String?  // JSON config
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@map("shifts")
+}
+
+model TimeOff {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  groupId   String   @db.Uuid
+  from      DateTime
+  to        DateTime
+  reason    String   @default("")
+  status    Int      @default(1) // RequestStatus
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id])
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@map("time_offs")
+}
+
+// ─── ACTIVITY LOG ────────────────────────────────────────────
+model ActivityLog {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @db.Uuid
+  type        Int      // ActivityType enum
+  description String   @default("")
+  entityId    String?  @db.Uuid
+  entityType  String?
+  taskId      String?  @db.Uuid
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User             @relation(fields: [userId], references: [id])
+  task WorkPackageTask? @relation(fields: [taskId], references: [id], onDelete: SetNull)
+
+  @@map("activity_logs")
+}
+
+// ─── WORKFLOWS ──────────────────────────────────────────────
+model Workflow {
+  id          String    @id @default(uuid()) @db.Uuid
+  userId      String    @db.Uuid
+  projectId   String?   @db.Uuid
+  title       String
+  description String    @default("")
+  nodes       Json      @default("[]")
+  edges       Json      @default("[]")
+  active      Boolean   @default(false)
+  trigger     String    @default("manual")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user       User       @relation(fields: [userId], references: [id])
+  project    Project?   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  executions WorkflowExecution[]
+
+  @@map("workflows")
+}
+
+model WorkflowExecution {
+  id         String   @id @default(uuid()) @db.Uuid
+  workflowId String   @db.Uuid
+  userId     String   @db.Uuid
+  status     Int      @default(0) // 0=Pending, 1=Running, 2=Success, 3=Failed, 4=Cancelled
+  startedAt  DateTime @default(now())
+  finishedAt DateTime?
+  error      String?
+  logs       Json     @default("[]")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  workflow Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id])
+
+  @@map("workflow_executions")
+}
+
+model TaskBlocker {
+  id          String   @id @default(uuid()) @db.Uuid
+  blockedId   String   @db.Uuid
+  blockerId   String   @db.Uuid
+  description String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  blocked WorkPackageTask @relation("BlockedTask", fields: [blockedId], references: [id], onDelete: Cascade)
+  blocker WorkPackageTask @relation("BlockerTask", fields: [blockerId], references: [id], onDelete: Cascade)
+
+  @@unique([blockedId, blockerId])
+  @@map("task_blockers")
+}
+
+model TaskRelation {
+  id         String   @id @default(uuid()) @db.Uuid
+  fromTaskId String   @db.Uuid
+  toTaskId   String   @db.Uuid
+  type       Int      @default(1) // 1=RelatesTo, 2=DuplicateOf, 3=ChildOf
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  fromTask WorkPackageTask @relation("RelatedFrom", fields: [fromTaskId], references: [id], onDelete: Cascade)
+  toTask   WorkPackageTask @relation("RelatedTo", fields: [toTaskId], references: [id], onDelete: Cascade)
+
+  @@unique([fromTaskId, toTaskId])
+  @@map("task_relations")
+}

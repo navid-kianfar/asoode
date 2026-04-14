@@ -1,0 +1,106 @@
+// ============================================
+// Shared dashboard styles
+// ============================================
+
+// --- Color legend (used by Events, Progress) ---
+.color-legend {
+  display: flex;
+  flex-wrap: wrap;
+
+  .item {
+    display: flex;
+    font-size: 0.7rem;
+    color: $color-muted;
+    margin: 0 10px;
+
+    .color {
+      display: flex;
+      min-width: 7px;
+      height: 7px;
+      border-radius: 7px;
+      position: relative;
+      top: 5px;
+
+      // Status colors
+      &.blocked  { background-color: $color-blocked; }
+      &.done     { background-color: $color-done; }
+      &.created  { background-color: $color-created; }
+      &.total    { background-color: $color-total; }
+      &.past     { background-color: $color-blocked; }
+      &.in-time  { background-color: $color-done; }
+      &.upcoming { background-color: $color-upcoming; }
+      &.today-legend { background-color: $color-today; }
+    }
+  }
+}
+
+// --- Tab group (used by FilesPage) ---
+.tab-group {
+  display: flex;
+  flex-wrap: wrap;
+  max-width: calc(100% - 150px);
+  overflow-x: auto;
+
+  .tab-btn {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 10px 16px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    white-space: nowrap;
+    color: $color-text-light;
+    display: flex;
+    align-items: center;
+
+    &.active {
+      border-bottom-color: #6b3d8d;
+      color: #6b3d8d;
+    }
+
+    &:hover:not(.active) {
+      color: $color-text-dark;
+    }
+
+    i {
+      font-size: 1.1rem;
+
+      &.premium {
+        color: #cfaf4e;
+      }
+    }
+  }
+}
+
+// ============================================
+// Dark mode (centralized for sub-components)
+// ============================================
+body.dark-mode {
+  // Tab group
+  .tab-group .tab-btn {
+    color: $color-muted;
+
+    &.active {
+      color: $primary-light;
+      border-bottom-color: $primary-light;
+    }
+
+    &:hover:not(.active) {
+      color: $dark-text-light;
+    }
+  }
+
+  // Color legend
+  .color-legend .item {
+    color: $dark-text-muted;
+  }
+
+  // Events calendar
+  .calendar-header { color: #aaa; }
+  .day-names { color: #777; }
+
+  .day-cell {
+    color: $dark-text-light;
+    &.other-month { color: $dark-border; }
+  }
+}

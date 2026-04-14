@@ -1,0 +1,306 @@
+// General styles
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Roboto', 'IRANSans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+// Prevent iOS zoom on input focus (requires >= 16px font)
+input, select, textarea {
+  font-size: 16px;
+}
+
+// Safe area support for modern phones (notch, bottom bar)
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+// Mobile responsive utilities
+@media (max-width: $breakpoint-sm) {
+  .hide-mobile { display: none !important; }
+}
+@media (min-width: $breakpoint-sm + 1) {
+  .show-mobile-only { display: none !important; }
+}
+
+// Modal responsive: allow scroll on long modals
+.modal-backdrop {
+  @media (max-width: $breakpoint-sm) {
+    align-items: flex-start;
+    padding: 16px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+// Touch-friendly interactive elements on mobile
+@media (max-width: $breakpoint-sm) {
+  .af-dropdown select,
+  select.kartabl-dropdown,
+  select.dropdown-toggle {
+    min-height: 44px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+}
+
+// Scrollbar styling
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.dark-mode ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+// Page transitions
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity $transition-normal;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+// Utility classes
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.no-select {
+  user-select: none;
+}
+
+// Bootstrap-like grid (simplified)
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 $spacing-md;
+}
+
+.container-fluid {
+  width: 100%;
+  padding: 0 $spacing-md;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 (-$spacing-sm);
+}
+
+@for $i from 1 through 12 {
+  .col-#{$i} {
+    flex: 0 0 percentage(calc($i / 12));
+    max-width: percentage(calc($i / 12));
+    padding: 0 $spacing-sm;
+  }
+}
+
+.col {
+  flex: 1 0 0%;
+  padding: 0 $spacing-sm;
+}
+
+// Responsive grid
+@media (min-width: $breakpoint-sm) {
+  @for $i from 1 through 12 {
+    .col-sm-#{$i} {
+      flex: 0 0 percentage(calc($i / 12));
+      max-width: percentage(calc($i / 12));
+    }
+  }
+}
+
+@media (min-width: $breakpoint-md) {
+  @for $i from 1 through 12 {
+    .col-md-#{$i} {
+      flex: 0 0 percentage(calc($i / 12));
+      max-width: percentage(calc($i / 12));
+    }
+  }
+}
+
+@media (min-width: $breakpoint-lg) {
+  @for $i from 1 through 12 {
+    .col-lg-#{$i} {
+      flex: 0 0 percentage(calc($i / 12));
+      max-width: percentage(calc($i / 12));
+    }
+  }
+}
+
+// Modal backdrop
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Animation classes
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease;
+}
+
+// ── Global Dropdown Styles ──────────────────────────────────────
+.af-dropdown {
+  position: relative;
+  display: inline-block;
+
+  select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-color: #fff;
+    border: 1px solid #dedede;
+    border-radius: 5px;
+    padding: 7px 30px 7px 10px;
+    font-size: 0.8rem;
+    font-family: inherit;
+    color: #333;
+    cursor: pointer;
+    outline: none;
+    max-width: 100%;
+    transition: border-color 0.2s;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23808080'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 10px 6px;
+
+    &:focus {
+      border-color: #6b3d8d;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    option {
+      padding: 6px 10px;
+      font-size: 0.8rem;
+    }
+  }
+}
+
+[dir="rtl"] .af-dropdown select,
+.rtl .af-dropdown select {
+  padding: 7px 10px 7px 30px;
+  background-position: left 10px center;
+}
+
+body.dark-mode .af-dropdown select {
+  background-color: #3b3b3b;
+  border-color: #555;
+  color: #ccc;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999999'/%3E%3C/svg%3E");
+
+  &:focus {
+    border-color: #59a8ef;
+  }
+
+  option {
+    background: #3b3b3b;
+    color: #ccc;
+  }
+}
+
+// Also style standalone selects that aren't wrapped in .af-dropdown
+select.kartabl-dropdown,
+select.dropdown-toggle {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: #fff;
+  border: 1px solid #dedede;
+  border-radius: 5px;
+  padding: 7px 30px 7px 10px;
+  font-size: 0.8rem;
+  font-family: inherit;
+  color: #333;
+  cursor: pointer;
+  outline: none;
+  max-width: 100%;
+  transition: border-color 0.2s;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23808080'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 10px 6px;
+
+  &:focus {
+    border-color: #6b3d8d;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+body.dark-mode {
+  select.kartabl-dropdown,
+  select.dropdown-toggle {
+    background-color: #3b3b3b;
+    border-color: #555;
+    color: #ccc;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999999'/%3E%3C/svg%3E");
+
+    &:focus {
+      border-color: #59a8ef;
+    }
+
+    option {
+      background: #3b3b3b;
+      color: #ccc;
+    }
+  }
+}

@@ -1,0 +1,46 @@
+// Drag and drop styles
+.sortable-ghost {
+  opacity: 0.4;
+  background: rgba($primary, 0.1);
+  border: 2px dashed $primary;
+  border-radius: $border-radius-md;
+}
+
+.sortable-chosen {
+  box-shadow: $shadow-4;
+}
+
+.sortable-drag {
+  opacity: 0.9;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  transform: rotate(2deg);
+}
+
+// Board specific drag styles
+.board-list-drag {
+  .sortable-ghost {
+    min-height: 40px;
+    border-radius: $border-radius-sm;
+  }
+}
+
+// Tree drag styles
+.tree-drag {
+  .sortable-ghost {
+    background: rgba($primary, 0.05);
+    border: 1px dashed $primary;
+  }
+}
+
+// Kanban drag area
+.kanban-drop-area {
+  min-height: 60px;
+  border: 2px dashed transparent;
+  border-radius: $border-radius-md;
+  transition: border-color $transition-fast, background-color $transition-fast;
+
+  &.drag-over {
+    border-color: $primary;
+    background-color: rgba($primary, 0.05);
+  }
+}

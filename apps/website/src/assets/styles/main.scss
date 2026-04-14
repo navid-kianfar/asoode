@@ -1,0 +1,401 @@
+// Asoode Website Styles
+// =====================
+
+// Variables — Light (default)
+$primary: #6b3d8d;
+$primary-light: #9575CD;
+$primary-dark: #512DA8;
+$accent: #FFC107;
+$text-dark: #1a1a2e;
+$text-medium: #5a576e;
+$text-light: #9e9bb0;
+$bg-white: #ffffff;
+$bg-light: #f5f5f5;
+$bg-section: #f7f5fb;
+$gradient-hero: linear-gradient(135deg, #6b3d8d 0%, #3F51B5 100%);
+
+$font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+$font-fa: 'Vazirmatn', 'Inter', -apple-system, sans-serif;
+$font-ar: 'Cairo', 'Inter', -apple-system, sans-serif;
+$max-width: 1200px;
+$section-padding: 80px 0;
+$section-padding-mobile: 48px 0;
+$card-radius: 16px;
+$card-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+
+// =====================
+// Base
+// =====================
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: $font-family;
+  color: $text-dark;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+// Per-language fonts
+html[lang='fa'],
+html[lang='fa'] body {
+  font-family: $font-fa;
+}
+
+html[lang='ar'],
+html[lang='ar'] body {
+  font-family: $font-ar;
+}
+
+// RTL layout adjustments
+[dir='rtl'] {
+  text-align: right;
+}
+
+// =====================
+// Dark Theme Overrides
+// =====================
+[data-theme='dark'] {
+  background-color: #0f0d1a;
+
+  body {
+    color: #e8e6f0;
+    background-color: #0f0d1a;
+  }
+
+  .site-body {
+    color: #9e9bb0;
+  }
+
+  .site-small {
+    color: #706d82;
+  }
+
+  .site-card {
+    background: #1a1726;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+  }
+
+  .site-section--alt {
+    background-color: #141020;
+  }
+
+  .hero-gradient {
+    background: linear-gradient(135deg, #1a1040 0%, #0f0d1a 100%);
+  }
+
+  .section-title {
+    p {
+      color: #9e9bb0;
+    }
+  }
+
+  .docs-content {
+    :deep(code) {
+      background: #252133;
+    }
+
+    :deep(table) {
+      th,
+      td {
+        border-color: #2a2640;
+      }
+
+      th {
+        background: #1a1726;
+      }
+    }
+  }
+}
+
+// =====================
+// Container
+// =====================
+.site-container {
+  max-width: $max-width;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+// =====================
+// Section spacing
+// =====================
+.site-section {
+  padding: $section-padding;
+
+  @media (max-width: 768px) {
+    padding: $section-padding-mobile;
+  }
+}
+
+.site-section--alt {
+  background-color: $bg-section;
+}
+
+// =====================
+// Typography
+// =====================
+.site-h1 {
+  font-size: 3rem;
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+
+  @media (max-width: 768px) {
+    font-size: 2rem;
+  }
+}
+
+.site-h2 {
+  font-size: 2.25rem;
+  line-height: 1.3;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+
+  @media (max-width: 768px) {
+    font-size: 1.75rem;
+  }
+}
+
+.site-h3 {
+  font-size: 1.5rem;
+  line-height: 1.4;
+  font-weight: 600;
+
+  @media (max-width: 768px) {
+    font-size: 1.25rem;
+  }
+}
+
+.site-body {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: $text-medium;
+}
+
+.site-small {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: $text-light;
+}
+
+// =====================
+// Cards
+// =====================
+.site-card {
+  background: $bg-white;
+  border-radius: $card-radius;
+  box-shadow: $card-shadow;
+  padding: 32px;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+  }
+}
+
+// =====================
+// Gradient hero
+// =====================
+.hero-gradient {
+  background: $gradient-hero;
+  color: white;
+}
+
+// =====================
+// Animation utilities
+// =====================
+.fade-in {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+
+  &.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// =====================
+// Section title
+// =====================
+.section-title {
+  text-align: center;
+  margin-bottom: 48px;
+
+  h2 {
+    @extend .site-h2;
+    margin-bottom: 16px;
+  }
+
+  p {
+    @extend .site-body;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+}
+
+// =====================
+// Feature alternating layout
+// =====================
+.feature-row {
+  display: flex;
+  align-items: center;
+  gap: 64px;
+  margin-bottom: 80px;
+
+  &:nth-child(even) {
+    flex-direction: row-reverse;
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column !important;
+    gap: 32px;
+    margin-bottom: 48px;
+  }
+
+  &__content,
+  &__image {
+    flex: 1;
+  }
+
+  &__image {
+    border-radius: $card-radius;
+    overflow: hidden;
+    background: $bg-light;
+    aspect-ratio: 16 / 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+}
+
+// =====================
+// Pricing
+// =====================
+.pricing-highlight {
+  border: 2px solid $primary;
+  position: relative;
+
+  .pricing-badge {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: $primary;
+    color: white;
+    padding: 4px 16px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+}
+
+// =====================
+// Documentation
+// =====================
+.docs-layout {
+  display: flex;
+  gap: 32px;
+  min-height: 60vh;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+}
+
+.docs-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+}
+
+.docs-content {
+  flex: 1;
+  min-width: 0;
+
+  :deep(h1) {
+    @extend .site-h1;
+    margin-bottom: 24px;
+  }
+
+  :deep(h2) {
+    @extend .site-h2;
+    margin-top: 48px;
+    margin-bottom: 16px;
+  }
+
+  :deep(h3) {
+    @extend .site-h3;
+    margin-top: 32px;
+    margin-bottom: 12px;
+  }
+
+  :deep(p) {
+    @extend .site-body;
+    margin-bottom: 16px;
+  }
+
+  :deep(ul),
+  :deep(ol) {
+    margin-bottom: 16px;
+    padding-left: 24px;
+  }
+
+  :deep(li) {
+    @extend .site-body;
+    margin-bottom: 8px;
+  }
+
+  :deep(code) {
+    background: $bg-light;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.9em;
+  }
+
+  :deep(pre) {
+    background: #1e1e1e;
+    color: #d4d4d4;
+    padding: 16px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin-bottom: 16px;
+
+    code {
+      background: none;
+      padding: 0;
+    }
+  }
+
+  :deep(table) {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+
+    th,
+    td {
+      padding: 10px 16px;
+      border: 1px solid #e0e0e0;
+      text-align: left;
+    }
+
+    th {
+      background: $bg-light;
+      font-weight: 600;
+    }
+  }
+}
