@@ -127,7 +127,7 @@
           class="wp-list-view__new-task-row"
           v-click-outside="{ 
             handler: cancelAdding,
-            include: () => Array.from(document.querySelectorAll('.v-overlay-container')) 
+            include: getOverlayContainers
           }"
         >
           <div class="wp-list-view__col wp-list-view__col--drag"></div>
@@ -250,7 +250,7 @@
                   <div v-bind="menuProps" class="wp-list-view__meta-btn" :class="{ 'wp-list-view__meta-btn--active': selectedLabels.length }">
                     <v-icon v-if="!selectedLabels.length" size="18">mdi-tag-plus-outline</v-icon>
                     <div v-else class="d-flex align-center ga-1 px-1">
-                      <div v-for="id in selectedLabels" :key="id" class="wp-list-view__label-dot" :style="{ backgroundColor: workPackage.labels.find(l => l.id === id)?.color }" :title="workPackage.labels.find(l => l.id === id)?.title"></div>
+                      <div v-for="id in selectedLabels" :key="id" class="wp-list-view__label-dot" :style="{ backgroundColor: workPackage?.labels?.find(l => l.id === id)?.color }" :title="workPackage?.labels?.find(l => l.id === id)?.title"></div>
                     </div>
                   </div>
                 </template>
@@ -338,6 +338,8 @@ const selectedLabels = ref<string[]>([]);
 const startAt = ref<Date | undefined>(undefined);
 const dueAt = ref<Date | undefined>(undefined);
 const dateFocus = ref<'start' | 'due'>('due');
+
+const getOverlayContainers = () => Array.from(document.querySelectorAll('.v-overlay-container'));
 
 // ── Reactive lists for UI state & dragging ──────────────────────────
 const localLists = ref<WorkPackageListViewModel[]>([]);

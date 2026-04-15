@@ -366,7 +366,7 @@ async function createTask(list: BoardList, title: string, metadata?: any) {
 
     // Apply Priority (Objective Value)
     if (metadata.objectiveValue !== undefined) {
-      await taskStore.edit(taskId, { objectiveValue: metadata.objectiveValue });
+      await taskStore.changePriority(taskId, { objectiveValue: metadata.objectiveValue });
     }
   }
 

@@ -18,6 +18,7 @@ import {
   RepositionTaskDto,
   MoveTaskDto,
   ChangeTitleDto,
+  ChangePriorityDto,
   ChangeDescriptionDto,
   ChangeStateDto,
   SetDateDto,
@@ -59,6 +60,15 @@ export class TasksController {
     @Body() body: ChangeTitleDto,
   ) {
     return this.tasksService.changeTitle(userId, id, body);
+  }
+
+  @Post(':id/change-priority')
+  changePriority(
+    @CurrentUser() userId: string,
+    @Param('id') id: string,
+    @Body() body: ChangePriorityDto,
+  ) {
+    return this.tasksService.changePriority(userId, id, body);
   }
 
   @Post(':id/change-description')

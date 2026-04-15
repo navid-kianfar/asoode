@@ -431,7 +431,7 @@ const emit = defineEmits<{
   'archive': [list: any];
   'archive-tasks': [list: any];
   'clear': [list: any];
-  'toggle-menu': [list: any];
+  'toggle-menu': [list: any, val?: boolean];
   'prepare-task': [list: any];
   'create-task': [list: any, title: string, metadata: any];
   'cancel-new-task': [list: any];

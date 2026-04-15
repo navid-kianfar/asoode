@@ -4,7 +4,7 @@ import {
   type KartablViewModel,
   API,
   type CreateTaskDto, type ChangeTitleDto, type ChangeDescriptionDto,
-  type ChangeStateDto, type RepositionTaskDto, type MoveTaskDto,
+  type ChangeStateDto, type RepositionTaskDto, type MoveTaskDto, type ChangePriorityDto,
   type SetDateDto, type AddCommentDto, type VoteDto, type SpendTimeDto, type AddMemberDto,
 } from '@asoode/shared';
 import { httpService } from '@/services/http.service';
@@ -24,6 +24,10 @@ export const useTaskStore = defineStore('task', () => {
 
   async function changeTitle(id: string, model: ChangeTitleDto): Promise<OperationResult<boolean>> {
     return httpService.post<boolean>(API.TASKS_CHANGE_TITLE(id), model);
+  }
+
+  async function changePriority(id: string, model: ChangePriorityDto): Promise<OperationResult<boolean>> {
+    return httpService.post<boolean>(API.TASKS_CHANGE_PRIORITY(id), model);
   }
 
   async function changeDescription(id: string, model: ChangeDescriptionDto): Promise<OperationResult<boolean>> {
@@ -131,7 +135,7 @@ export const useTaskStore = defineStore('task', () => {
   }
 
   return {
-    create, convertToTask, fetchTask, changeTitle, changeDescription, changeState,
+    create, convertToTask, fetchTask, changeTitle, changePriority, changeDescription, changeState,
     reposition, move, setDate, setLocation,
     addMember, removeMember, addLabel, removeLabel,
     renameAttachment, removeAttachment, coverAttachment, uploadAttachment,

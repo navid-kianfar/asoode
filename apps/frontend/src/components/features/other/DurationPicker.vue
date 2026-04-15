@@ -41,17 +41,17 @@ import { useI18n } from 'vue-i18n';
 import AppDatePicker from '@/components/core/AppDatePicker.vue';
 
 const props = defineProps<{
-  modelValue?: { start: Date | string; end: Date | string };
+  modelValue?: { start: Date | string | null; end: Date | string | null };
 }>();
 
 const emit = defineEmits<{
-  'update:modelValue': [value: { start: Date | string; end: Date | string }];
+  'update:modelValue': [value: { start: Date | string | null; end: Date | string | null }];
 }>();
 
 const { t } = useI18n();
 
-const startDate = ref<Date | string>(props.modelValue?.start || '');
-const endDate = ref<Date | string>(props.modelValue?.end || '');
+const startDate = ref<Date | string | null>(props.modelValue?.start || '');
+const endDate = ref<Date | string | null>(props.modelValue?.end || '');
 const activePreset = ref('');
 
 interface Preset {
@@ -127,13 +127,13 @@ const durationText = computed(() => {
   return `${days} ${t('DAYS')}`;
 });
 
-function onStartChange(val: Date | string) {
+function onStartChange(val: Date | string | null) {
   startDate.value = val;
   activePreset.value = '';
   emitValue();
 }
 
-function onEndChange(val: Date | string) {
+function onEndChange(val: Date | string | null) {
   endDate.value = val;
   activePreset.value = '';
   emitValue();

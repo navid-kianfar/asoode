@@ -137,6 +137,7 @@ export const API = {
   TASKS_LOGS: (id: string) => `/tasks/${id}/logs`,
   TASKS_ARCHIVE: (id: string) => `/tasks/${id}/archive`,
   TASKS_CUSTOM_FIELD_VALUE: (taskId: string, fieldId: string) => `/tasks/${taskId}/custom-field/${fieldId}/value`,
+  TASKS_CHANGE_PRIORITY: (id: string) => `/tasks/${id}/change-priority`,
   TASKS_CALENDAR: '/tasks/calendar',
   TASKS_KARTABL: '/tasks/kartabl',
   TIMES_MINE: '/times/mine',

@@ -52,3 +52,7 @@ export interface AddMemberDto {
   recordId: string;
   isGroup: boolean;
 }
+
+export interface ChangePriorityDto {
+  objectiveValue: number;
+}

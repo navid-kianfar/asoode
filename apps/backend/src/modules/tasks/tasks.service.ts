@@ -13,6 +13,7 @@ import {
   RepositionTaskDto,
   MoveTaskDto,
   ChangeTitleDto,
+  ChangePriorityDto,
   ChangeDescriptionDto,
   ChangeStateDto,
   SetDateDto,
@@ -573,6 +574,39 @@ export class TasksService {
       push: {
         title: 'Task updated',
         description: `Task "${dto.title}" was updated`,
+        url: `/work-package/${task.packageId}`,
+      },
+    });
+
+    return OperationResult.Success(true);
+  }
+
+  async changePriority(
+    userId: string,
+    id: string,
+    dto: ChangePriorityDto,
+  ): Promise<OperationResult<boolean>> {
+    const task = await this.verifyTaskAccess(userId, id, AccessType.Editor);
+    if (!task) {
+      return OperationResult.NotFound();
+    }
+
+    await this.prisma.workPackageTask.update({
+      where: { id },
+      data: { objectiveValue: dto.objectiveValue },
+    });
+
+    const memberIds = await this.getPackageMemberUserIds(task.packageId);
+    this.domainEvent.emit({
+      type: ActivityType.WorkPackageTaskEdit,
+      actorId: userId,
+      entityId: id,
+      entityType: 'task',
+      recipientUserIds: memberIds,
+      data: { id, objectiveValue: dto.objectiveValue, packageId: task.packageId, listId: task.listId },
+      push: {
+        title: 'Task updated',
+        description: `Task "${task.title}" priority was updated`,
         url: `/work-package/${task.packageId}`,
       },
     });

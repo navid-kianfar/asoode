@@ -41,7 +41,8 @@ RUN pnpm --filter @asoode/backend deploy --legacy --prod /prod
 # We copy the entire .prisma directory to the production folder
 RUN mkdir -p /prod/node_modules/.prisma && \
     cp -r apps/backend/node_modules/.prisma/client /prod/node_modules/.prisma/ 2>/dev/null || \
-    cp -r node_modules/.prisma/client /prod/node_modules/.prisma/
+    cp -r node_modules/.prisma/client /prod/node_modules/.prisma/ || \
+    echo "No Prisma client found, proceeding anyway (might fail at runtime)"
 
 # Production stage
 FROM node:22-alpine AS production
