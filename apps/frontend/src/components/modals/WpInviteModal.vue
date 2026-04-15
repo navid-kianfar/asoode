@@ -18,12 +18,14 @@
     </v-alert>
 
     <div class="wp-invite-modal-body">
-      <AppInput
-        ref="identifierInput"
+      <AppAutoComplete
         v-model="identifier"
+        v-model:search="identifierSearch"
+        :items="allPossibleMembers"
         :label="$t('EMAIL_OR_USERNAME')"
         horizontal
         dense
+        class="mb-4"
         @keydown.enter="invite"
       />
 
@@ -32,6 +34,7 @@
         :items="accessItems" 
         :label="$t('ACCESS_LEVEL')"
         horizontal
+        dense
       />
     </div>
 
@@ -57,13 +60,15 @@
 import { ref, computed, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useWorkPackageStore } from '@/stores/work-package.store';
+import { useProjectStore } from '@/stores/project.store';
+import { useGroupStore } from '@/stores/group.store';
 import {
   OperationResultStatus,
   AccessType,
   type WorkPackageViewModel,
 } from '@asoode/shared';
 import AppModal from '../core/AppModal.vue';
-import AppInput from '../core/AppInput.vue';
+import AppAutoComplete from '../core/AppAutoComplete.vue';
 import AppSelect from '../core/AppSelect.vue';
 
 const props = defineProps<{
@@ -77,6 +82,8 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const wpStore = useWorkPackageStore();
+const projectStore = useProjectStore();
+const groupStore = useGroupStore();
 
 const visible = ref(true);
 
@@ -91,10 +98,47 @@ const saving = ref(false);
 const identifier = ref('');
 const access = ref<AccessType>(AccessType.Editor);
 const successMessage = ref('');
-const identifierInput = ref<any>(null);
+const identifierSearch = ref('');
+
+const allPossibleMembers = computed(() => {
+  const members: { text: string; value: string }[] = [];
+  const seenIds = new Set<string>();
+
+  // 1. Project Members
+  const p = projectStore.projects.find((x) => x.id === props.workPackage.projectId);
+  if (p) {
+    (p.members || []).forEach((m) => {
+      const email = m.member?.email;
+      if (email && !seenIds.has(email)) {
+        seenIds.add(email);
+        members.push({
+          text: `${m.member.fullName || m.member.firstName || ''} (${email})`,
+          value: email,
+        });
+      }
+    });
+  }
+
+  // 2. Group Members
+  groupStore.groups.forEach((g) => {
+    (g.members || []).forEach((m) => {
+      const email = m.member?.email;
+      if (email && !seenIds.has(email)) {
+        seenIds.add(email);
+        members.push({
+          text: `${m.member.fullName || m.member.firstName || ''} (${email})`,
+          value: email,
+        });
+      }
+    });
+  });
+
+  return members.sort((a, b) => a.text.localeCompare(b.text));
+});
 
 async function invite() {
-  if (!identifier.value.trim() || saving.value) return;
+  const finalIdentifier = (identifier.value || identifierSearch.value || '').trim();
+  if (!finalIdentifier || saving.value) return;
 
   saving.value = true;
   successMessage.value = '';
@@ -102,7 +146,7 @@ async function invite() {
   const op = await wpStore.addAccess(props.workPackage.id, {
     members: [
       {
-        id: identifier.value.trim(),
+        id: finalIdentifier,
         access: access.value,
         isGroup: false,
       },
@@ -115,14 +159,18 @@ async function invite() {
     successMessage.value = t('INVITATION_SENT_SUCCESS');
     emit('invited');
     identifier.value = '';
-    await nextTick();
-    identifierInput.value?.focus();
+    identifierSearch.value = '';
   }
 }
 </script>
 
 <style lang="scss">
+@use '@/styles/variables' as *;
+
 .wp-invite-modal-body {
-  padding: 4px;
+  padding: 12px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 </style>
