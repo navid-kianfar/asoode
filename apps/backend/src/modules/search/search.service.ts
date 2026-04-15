@@ -111,6 +111,7 @@ export class SearchService {
       return {
         tasks: [],
         projects: [],
+        workPackages: [],
         groups: [],
         storage: { files: [], folders: [] },
         members: [],

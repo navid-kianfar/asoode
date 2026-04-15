@@ -88,6 +88,31 @@
         </v-list>
       </div>
 
+      <!-- Work Packages -->
+      <div v-if="results.workPackages?.length" class="result-section mb-6">
+        <h4 class="text-subtitle-2 d-flex align-center mb-2">
+          <v-icon size="18" class="mr-2">mdi-package-variant-closed</v-icon>
+          {{ $t('WORK_PACKAGES') }}
+          <v-chip size="x-small" class="ml-2" variant="tonal">{{ results.workPackages.length }}</v-chip>
+        </h4>
+        <v-list density="compact">
+          <v-list-item
+            v-for="wp in results.workPackages"
+            :key="wp.id"
+            class="rounded mb-1"
+            @click="$emit('openWorkPackage', wp)"
+          >
+            <template #prepend>
+              <v-icon size="16" :color="wp.color || 'primary'">mdi-package-variant-closed</v-icon>
+            </template>
+            <v-list-item-title class="text-body-2">{{ wp.title }}</v-list-item-title>
+            <v-list-item-subtitle v-if="(wp as any).projectTitle" class="text-caption">
+              {{ (wp as any).projectTitle }}
+            </v-list-item-subtitle>
+          </v-list-item>
+        </v-list>
+      </div>
+
       <!-- Members -->
       <div v-if="results.members?.length" class="result-section mb-6">
         <h4 class="text-subtitle-2 d-flex align-center mb-2">
@@ -165,6 +190,7 @@ import AppWaiting from '@/components/core/AppWaiting.vue';
 defineEmits<{
   openTask: [task: any];
   openProject: [project: any];
+  openWorkPackage: [wp: any];
   openGroup: [group: any];
   openMember: [member: any];
 }>();
@@ -179,6 +205,7 @@ const isEmpty = computed(() => {
   return (
     !r.tasks?.length &&
     !r.projects?.length &&
+    !r.workPackages?.length &&
     !r.groups?.length &&
     !r.members?.length &&
     !r.storage?.files?.length &&
