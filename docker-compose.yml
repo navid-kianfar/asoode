@@ -1,4 +1,5 @@
 services:
+  # ─── INFRASTRUCTURE ─────────────────────────────────────
   postgres:
     image: postgres:16-alpine
     container_name: asoode-postgres
@@ -10,6 +11,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U asoode"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   rabbitmq:
     image: rabbitmq:3-management-alpine
@@ -22,6 +28,11 @@ services:
       - "15672:15672"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "check_running"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   minio:
     image: minio/minio:latest
@@ -35,6 +46,77 @@ services:
       - "9001:9001"
     volumes:
       - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── APPLICATIONS ───────────────────────────────────────
+  backend:
+    image: kianfar/asoode-backend:latest
+    container_name: asoode-backend
+    environment:
+      DATABASE_URL: postgresql://asoode:asoode@postgres:5432/asoode?schema=public
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: 9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      JWT_SECRET: asoode-jwt-secret-change-in-production
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+  socket:
+    image: kianfar/asoode-socket:latest
+    container_name: asoode-socket
+    environment:
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+      BACKEND_SERVER: backend
+    ports:
+      - "8020:8020"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  worker:
+    image: kianfar/asoode-worker:latest
+    container_name: asoode-worker
+    environment:
+      DATABASE_URL: postgresql://asoode:asoode@postgres:5432/asoode?schema=public
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: 9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  frontend:
+    image: kianfar/asoode-frontend:latest
+    container_name: asoode-frontend
+    ports:
+      - "80:80"
+    environment:
+      VITE_API_URL: http://localhost:3000
+    depends_on:
+      - backend
+
+  website:
+    image: kianfar/asoode-website:latest
+    container_name: asoode-website
+    ports:
+      - "8080:80"
 
 volumes:
   postgres_data:

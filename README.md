@@ -125,6 +125,43 @@ graph TD
 
 ---
 
+## 🐳 Docker Deployment
+
+Asoode is fully containerized with images available for all services under the `kianfar` namespace.
+
+### Unified Orchestration (Recommended)
+The easiest way to run the entire Asoode stack is using the all-in-one `docker-compose.yml`:
+
+```bash
+docker-compose up -d
+```
+This command starts:
+- **Infrastructure**: Postgres, RabbitMQ, and MinIO.
+- **Applications**: Backend, Socket, Worker, Website, and Frontend.
+
+### Standalone Usage
+You can also run individual services using `docker run`. Below are examples for the core components:
+
+**Backend:**
+```bash
+docker run -d \
+  --name asoode-backend \
+  -p 3000:3000 \
+  -e DATABASE_URL=postgresql://user:pass@host:5432/db \
+  kianfar/asoode-backend:latest
+```
+
+**Frontend:**
+```bash
+docker run -d \
+  --name asoode-frontend \
+  -p 80:80 \
+  -e VITE_API_URL=http://your-api-url:3000 \
+  kianfar/asoode-frontend:latest
+```
+
+---
+
 ## 🤝 Contributing
 
 We welcome contributions! Whether it's a bug fix, a new feature, or documentation improvements:

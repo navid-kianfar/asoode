@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 env:
-  DOCKER_IMAGE_NAMESPACE: ${{ secrets.DOCKERHUB_NAMESPACE || github.repository_owner }}
+  DOCKER_IMAGE_NAMESPACE: kianfar
 
 jobs:
   build-and-push:
