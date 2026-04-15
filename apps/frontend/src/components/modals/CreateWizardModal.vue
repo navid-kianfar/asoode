@@ -104,6 +104,15 @@
       <!-- ═══ PROJECT: INVITE MEMBERS ═══ -->
       <div v-if="mode === 'projectInvite'" class="cw-invite">
         <p class="cw-invite__hint">{{ $t('NEW_PROJECT_MEMBERS') }}</p>
+
+        <AppAutoComplete
+          v-model="selectedMemberEmail"
+          :items="allPossibleMembers"
+          :placeholder="$t('SELECT_FROM_TEAM')"
+          class="mb-3"
+          @update:model-value="onMemberSelected"
+        />
+
         <div class="cw-invite__input-row">
           <AppInput
             v-model="inviteEmail"
@@ -190,6 +199,15 @@
       <!-- ═══ GROUP: INVITE MEMBERS ═══ -->
       <div v-if="mode === 'groupInvite'" class="cw-invite">
         <p class="cw-invite__hint">{{ $t('NEW_GROUP_MEMBERS') }}</p>
+
+        <AppAutoComplete
+          v-model="selectedMemberEmail"
+          :items="allPossibleMembers"
+          :placeholder="$t('SELECT_FROM_TEAM')"
+          class="mb-3"
+          @update:model-value="onMemberSelected"
+        />
+
         <div class="cw-invite__input-row">
           <AppInput
             v-model="inviteEmail"
@@ -287,6 +305,7 @@ import { OperationResultStatus, BoardTemplate, GroupType } from '@asoode/shared'
 import AppModal from '../core/AppModal.vue';
 import AppInput from '../core/AppInput.vue';
 import AppSelect from '../core/AppSelect.vue';
+import AppAutoComplete from '../core/AppAutoComplete.vue';
 
 const { t } = useI18n();
 const emit = defineEmits<{ close: [] }>();
@@ -322,6 +341,36 @@ const groupType = ref<number>(GroupType.Team);
 // Invite
 const inviteEmail = ref('');
 const invitees = ref<string[]>([]);
+const selectedMemberEmail = ref('');
+
+const allPossibleMembers = computed(() => {
+  const members: { text: string; value: string }[] = [];
+  const seen = new Set<string>();
+
+  groupStore.groups.forEach((g) => {
+    (g.members || []).forEach((m) => {
+      const email = m.member?.email;
+      if (email && !seen.has(email)) {
+        seen.add(email);
+        members.push({
+          text: `${m.member.fullName || m.member.firstName || ''} (${email})`,
+          value: email,
+        });
+      }
+    });
+  });
+
+  return members.sort((a, b) => a.text.localeCompare(b.text));
+});
+
+function onMemberSelected(email: string) {
+  if (email && !invitees.value.includes(email)) {
+    invitees.value.push(email);
+  }
+  nextTick(() => {
+    selectedMemberEmail.value = '';
+  });
+}
 
 // Import
 const importSource = ref('');
