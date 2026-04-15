@@ -176,7 +176,7 @@ import { useGroupStore } from '@/stores/group.store';
 import { useProjectNavigation } from '@/composables/useProjectNavigation';
 import { usePermission } from '@/composables/usePermission';
 import {
-  OperationResultStatus, ProjectTemplate,
+  OperationResultStatus, ProjectTemplate, FormElementType,
   type ProjectViewModel,
 } from '@asoode/shared';
 import ProjectTree from '@/components/features/project/ProjectTree.vue';
@@ -366,6 +366,14 @@ function newSubProject() {
 }
 
 function newWorkPackage() {
+  if (!project.value) return;
+  const membersList = (project.value.members || [])
+    .filter(m => !m.isGroup)
+    .map(m => ({
+      text: m.member?.fullName || m.member?.firstName || m.member?.email || 'Unknown',
+      value: m.recordId
+    }));
+
   modal.prompt({
     icon: 'mdi-package-variant',
     title: 'NEW_WORK_PACKAGE',
@@ -373,14 +381,27 @@ function newWorkPackage() {
       {
         elements: [
           { config: { field: 'title' }, params: { model: '', placeHolder: 'TITLE' }, validation: { required: { value: true, message: 'TITLE_REQUIRED' } } },
+          {
+            config: { field: 'members' },
+            type: FormElementType.DropDown,
+            multiSelect: true,
+            params: { model: [], placeHolder: 'MEMBERS' },
+            items: membersList
+          },
         ],
       },
     ],
     action: async (params: any) => {
       if (!project.value) return;
-      params.boardTemplate = 1;
-      const op = await projectStore.createWorkPackage(project.value.id, params);
-      if (op.status === OperationResultStatus.Success) {
+      const { members, ...rest } = params;
+      rest.boardTemplate = 1;
+      const op = await projectStore.createWorkPackage(project.value.id, rest);
+      if (op.status === OperationResultStatus.Success && op.data) {
+        if (members?.length) {
+          await projectStore.addWorkPackageAccess(op.data.id, {
+            members: members.map((id: string) => ({ id, access: 4, isGroup: false }))
+          }).catch(() => {});
+        }
         loadProject();
       }
     },

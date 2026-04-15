@@ -9,6 +9,7 @@
     :stable="true"
     :persistent="false"
     :loading="waiting"
+    :show-close="false"
     @close="$emit('close')"
   >
     <template #header>
@@ -28,6 +29,14 @@
           <h3 class="app-modal__title">{{ stepTitle }}</h3>
           <p v-if="stepSubtitle" class="app-modal__subtitle">{{ stepSubtitle }}</p>
         </div>
+        <v-spacer />
+        <v-btn
+          icon="mdi-close"
+          variant="text"
+          size="small"
+          class="ml-2"
+          @click="$emit('close')"
+        />
       </div>
     </template>
 
@@ -100,6 +109,7 @@
             v-model="inviteEmail"
             :placeholder="$t('EMAIL_OR_PHONE')"
             dense
+            class="flex-grow-1"
             @keydown.enter="addInvitee"
           />
           <v-btn
@@ -185,6 +195,7 @@
             v-model="inviteEmail"
             :placeholder="$t('EMAIL_OR_PHONE')"
             dense
+            class="flex-grow-1"
             @keydown.enter="addInvitee"
           />
           <v-btn
@@ -604,6 +615,15 @@ async function finalize() {
 
 .cw-body-inner {
   padding: 4px;
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.cw-choose, .cw-form, .cw-invite, .cw-templates, .cw-import {
+  width: 100%;
+  flex: 1;
 }
 
 .cw-cards {

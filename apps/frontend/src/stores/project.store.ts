@@ -101,6 +101,10 @@ export const useProjectStore = defineStore('project', () => {
     return httpService.post<any>(API.WP_CREATE(projectId), model);
   }
 
+  async function addWorkPackageAccess(id: string, model: AddAccessDto): Promise<OperationResult<boolean>> {
+    return httpService.post<boolean>(API.WP_ADD_ACCESS(id), model);
+  }
+
   async function addAccess(id: string, model: AddAccessDto): Promise<OperationResult<boolean>> {
     return httpService.post<boolean>(API.PROJECTS_ADD_ACCESS(id), model);
   }
@@ -159,7 +163,7 @@ export const useProjectStore = defineStore('project', () => {
   return {
     projects, templates, load, archived, fetchProject, create, edit, remove, archiveProject,
     createSubProject, editSubProject, removeSubProject, changeSubProjectOrder,
-    createSeason, editSeason, removeSeason, createWorkPackage,
+    createSeason, editSeason, removeSeason, createWorkPackage, addWorkPackageAccess,
     addAccess, changeAccess, removeAccess, changePendingAccess, removePendingAccess,
     objectives, objectiveDetails, tree, roadMap, progress,
     getPermission, getWorkPackagePermission, upsertProject,

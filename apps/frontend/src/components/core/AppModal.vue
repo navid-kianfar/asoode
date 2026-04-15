@@ -13,7 +13,9 @@
       :elevation="24"
       :style="{ 
         minHeight: minHeight ? (typeof minHeight === 'number' ? minHeight + 'px' : minHeight) : undefined,
-        height: height ? (typeof height === 'number' ? height + 'px' : height) : undefined 
+        height: height ? (typeof height === 'number' ? height + 'px' : height) : undefined,
+        width: width ? (typeof width === 'number' ? width + 'px' : width) : '100%',
+        minWidth: width ? (typeof width === 'number' ? width + 'px' : width) : undefined
       }"
     >
       <!-- Header -->
