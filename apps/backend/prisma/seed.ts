@@ -10,377 +10,344 @@ function daysAgo(n: number): Date {
   return d;
 }
 
+function daysFuture(n: number): Date {
+  const d = new Date();
+  d.setDate(d.getDate() + n);
+  return d;
+}
+
 async function main() {
-  console.log('Seeding database...');
+  console.log('Seeding database with complex enterprise project data...');
+
+  // ─── CLEAR DATA ──────────────────────────────────────────
+  console.log('Clearing old management data...');
+  await prisma.taskLabel.deleteMany();
+  await prisma.taskMember.deleteMany();
+  await prisma.taskComment.deleteMany();
+  await prisma.workPackageTask.deleteMany();
+  await prisma.workPackageLabel.deleteMany();
+  await prisma.workPackageList.deleteMany();
+  await prisma.workPackageMember.deleteMany();
+  await prisma.workPackage.deleteMany();
+  await prisma.projectMember.deleteMany();
+  await prisma.subProject.deleteMany();
+  await prisma.project.deleteMany();
+  await prisma.groupMember.deleteMany();
+  await prisma.group.deleteMany();
+  // Clear messenger/files/devices as requested (even if not seeded later)
+  await prisma.conversation.deleteMany();
+  await prisma.channelMember.deleteMany();
+  await prisma.channel.deleteMany();
+  await prisma.fileEntry.deleteMany();
+  await prisma.device.deleteMany();
 
   // ─── USERS ──────────────────────────────────────────────
   const passwordHash = await bcrypt.hash('123456', 12);
-
-  const adminId = uuid();
-  const userId = uuid();
-
-  await prisma.user.createMany({
-    data: [
-      {
-        id: adminId,
-        email: 'admin@asoode.com',
-        username: 'admin',
-        passwordHash,
-        firstName: 'Admin',
-        lastName: 'User',
-        bio: 'Platform administrator',
-        emailConfirmed: true,
-        phoneConfirmed: true,
-        userType: 0,
-      },
-      {
-        id: userId,
-        email: 'user@asoode.com',
-        username: 'user',
-        passwordHash,
-        firstName: 'Test',
-        lastName: 'User',
-        bio: 'Test user account',
-        emailConfirmed: true,
-        phoneConfirmed: true,
-        userType: 0,
-      },
-    ],
-  });
-
-  // ─── GROUPS ─────────────────────────────────────────────
-  const groupIds = { team: uuid(), eng: uuid(), design: uuid() };
-
-  await prisma.group.createMany({
-    data: [
-      {
-        id: groupIds.team,
-        userId: adminId,
-        type: 2, // Organization
-        title: 'Asoode Team',
-        description: 'Main organization group',
-        premium: true,
-      },
-      {
-        id: groupIds.eng,
-        userId: adminId,
-        parentId: groupIds.team,
-        rootId: groupIds.team,
-        type: 7, // Department
-        title: 'Engineering',
-        description: 'Engineering department',
-      },
-      {
-        id: groupIds.design,
-        userId: adminId,
-        parentId: groupIds.team,
-        rootId: groupIds.team,
-        type: 8, // Team
-        title: 'Design',
-        description: 'Design team',
-      },
-    ],
-  });
-
-  // Add members to groups
-  const groupMemberData = [
-    { id: uuid(), userId: adminId, groupId: groupIds.team, access: 1 },
-    { id: uuid(), userId: userId, groupId: groupIds.team, access: 4 },
-    { id: uuid(), userId: adminId, groupId: groupIds.eng, access: 1 },
-    { id: uuid(), userId: userId, groupId: groupIds.eng, access: 4 },
-    { id: uuid(), userId: adminId, groupId: groupIds.design, access: 1 },
-    { id: uuid(), userId: userId, groupId: groupIds.design, access: 4 },
+  const teamMembers = [
+    { email: 'admin@asoode.com', username: 'admin', firstName: 'Navid', lastName: 'Kianfar', bio: 'CTO & Platform Architect' },
+    { email: 'aslan@asoode.com', username: 'aslan', firstName: 'Aslan', lastName: 'Nejad', bio: 'Lead Software Engineer' },
+    { email: 'navid@asoode.com', username: 'navid_ux', firstName: 'Navid', lastName: 'Designer', bio: 'Head of Product Design' },
+    { email: 'kianfar@asoode.com', username: 'kianfar_infra', firstName: 'Kianfar', lastName: 'Dev', bio: 'Infrastructure & DevOps Lead' },
+    { email: 'user@asoode.com', username: 'tester', firstName: 'Test', lastName: 'User', bio: 'Senior QA Engineer' },
   ];
-  await prisma.groupMember.createMany({ data: groupMemberData });
 
-  // ─── PROJECTS ───────────────────────────────────────────
-  const projectIds = { platform: uuid(), mobile: uuid(), website: uuid() };
-
-  await prisma.project.createMany({
-    data: [
-      {
-        id: projectIds.platform,
-        userId: adminId,
-        groupId: groupIds.team,
-        title: 'Platform Development',
-        description: 'Core platform development project',
-        complex: true,
-        premium: true,
-      },
-      {
-        id: projectIds.mobile,
-        userId: adminId,
-        groupId: groupIds.eng,
-        title: 'Mobile App',
-        description: 'iOS and Android mobile application',
-        complex: false,
-      },
-      {
-        id: projectIds.website,
-        userId: adminId,
-        groupId: groupIds.design,
-        title: 'Website Redesign',
-        description: 'Marketing website redesign project',
-        complex: false,
-      },
-    ],
-  });
-
-  // Add members to projects
-  const projectMemberData = [
-    { id: uuid(), recordId: adminId, projectId: projectIds.platform, access: 1 },
-    { id: uuid(), recordId: userId, projectId: projectIds.platform, access: 4 },
-    { id: uuid(), recordId: adminId, projectId: projectIds.mobile, access: 1 },
-    { id: uuid(), recordId: userId, projectId: projectIds.mobile, access: 4 },
-    { id: uuid(), recordId: adminId, projectId: projectIds.website, access: 1 },
-    { id: uuid(), recordId: userId, projectId: projectIds.website, access: 4 },
-  ];
-  await prisma.projectMember.createMany({ data: projectMemberData });
-
-  // ─── WORK PACKAGES ─────────────────────────────────────
-  interface WpDef {
-    id: string;
-    projectId: string;
-    title: string;
-    lists: { id: string; title: string; order: number; tasks: { title: string; state: number }[] }[];
+  const userRecords: any[] = [];
+  for (const u of teamMembers) {
+    const user = await prisma.user.upsert({
+      where: { email: u.email },
+      update: { ...u, passwordHash },
+      create: { ...u, passwordHash, emailConfirmed: true, phoneConfirmed: true },
+    });
+    userRecords.push(user);
   }
+  const adminId = userRecords[0].id;
 
-  const wpDefs: WpDef[] = [];
-
-  for (const [projKey, projId] of Object.entries(projectIds)) {
-    for (let wpIdx = 0; wpIdx < 2; wpIdx++) {
-      const wpId = uuid();
-      const wpTitle =
-        projKey === 'platform'
-          ? wpIdx === 0
-            ? 'Backend API'
-            : 'Frontend UI'
-          : projKey === 'mobile'
-            ? wpIdx === 0
-              ? 'iOS Development'
-              : 'Android Development'
-            : wpIdx === 0
-              ? 'Homepage Design'
-              : 'Inner Pages';
-
-      const lists = [
-        {
-          id: uuid(),
-          title: 'To Do',
-          order: 0,
-          tasks: [
-            { title: `Set up ${wpTitle} project structure`, state: 3 },
-            { title: `Create ${wpTitle} documentation`, state: 1 },
-            { title: `Review ${wpTitle} requirements`, state: 1 },
-          ],
-        },
-        {
-          id: uuid(),
-          title: 'In Progress',
-          order: 1,
-          tasks: [
-            { title: `Implement ${wpTitle} core features`, state: 2 },
-            { title: `Design ${wpTitle} architecture`, state: 2 },
-          ],
-        },
-        {
-          id: uuid(),
-          title: 'Review',
-          order: 2,
-          tasks: [
-            { title: `Code review for ${wpTitle}`, state: 2 },
-            { title: `QA testing for ${wpTitle}`, state: 1 },
-          ],
-        },
-        {
-          id: uuid(),
-          title: 'Done',
-          order: 3,
-          tasks: [
-            { title: `${wpTitle} initial setup complete`, state: 3 },
-            { title: `${wpTitle} environment configured`, state: 3 },
-            { title: `${wpTitle} CI/CD pipeline ready`, state: 3 },
-          ],
-        },
-      ];
-
-      wpDefs.push({ id: wpId, projectId: projId, title: wpTitle, lists });
-    }
-  }
-
-  // Create work packages
-  await prisma.workPackage.createMany({
-    data: wpDefs.map((wp, i) => ({
-      id: wp.id,
+  // ─── GROUP & PROJECT ────────────────────────────────────
+  const groupId = uuid();
+  await prisma.group.create({
+    data: {
+      id: groupId,
       userId: adminId,
-      projectId: wp.projectId,
-      title: wp.title,
-      order: i,
-      boardTemplate: 5, // Kanban
+      type: 2, // Organization
+      title: 'Asoode Enterprise Solutions',
+      description: 'Global infrastructure for enterprise grade project management.',
+      premium: true,
+    },
+  });
+
+  await prisma.groupMember.createMany({
+    data: userRecords.map(u => ({
+      id: uuid(),
+      userId: u.id,
+      groupId: groupId,
+      access: u.email === 'admin@asoode.com' ? 1 : 4,
     })),
   });
 
-  // Add members to work packages
-  const wpMemberData: { id: string; recordId: string; packageId: string; access: number }[] = [];
-  for (const wp of wpDefs) {
-    wpMemberData.push({ id: uuid(), recordId: adminId, packageId: wp.id, access: 1 });
-    wpMemberData.push({ id: uuid(), recordId: userId, packageId: wp.id, access: 4 });
-  }
-  await prisma.workPackageMember.createMany({ data: wpMemberData });
-
-  // Create labels for each work package
-  const labelColors = [
-    { color: '#ef5350', title: 'Bug' },
-    { color: '#42a5f5', title: 'Feature' },
-    { color: '#66bb6a', title: 'Enhancement' },
-    { color: '#ffa726', title: 'Urgent' },
-    { color: '#ab47bc', title: 'Design' },
-  ];
-
-  const labelMap: Record<string, string[]> = {};
-  for (const wp of wpDefs) {
-    labelMap[wp.id] = [];
-    for (const lbl of labelColors) {
-      const lblId = uuid();
-      labelMap[wp.id].push(lblId);
-      await prisma.workPackageLabel.create({
-        data: { id: lblId, packageId: wp.id, title: lbl.title, color: lbl.color },
-      });
-    }
-  }
-
-  // Create lists and tasks
-  let taskCount = 0;
-  for (const wp of wpDefs) {
-    for (const list of wp.lists) {
-      await prisma.workPackageList.create({
-        data: { id: list.id, packageId: wp.id, title: list.title, order: list.order },
-      });
-
-      for (let tIdx = 0; tIdx < list.tasks.length; tIdx++) {
-        const taskDef = list.tasks[tIdx];
-        const taskId = uuid();
-        const isDone = taskDef.state === 3;
-        taskCount++;
-
-        await prisma.workPackageTask.create({
-          data: {
-            id: taskId,
-            userId: taskCount % 2 === 0 ? adminId : userId,
-            packageId: wp.id,
-            projectId: wp.projectId,
-            listId: list.id,
-            title: taskDef.title,
-            description: `Description for: ${taskDef.title}`,
-            order: tIdx,
-            state: taskDef.state,
-            doneAt: isDone ? daysAgo(Math.floor(Math.random() * 10)) : null,
-            doneUserId: isDone ? adminId : null,
-            createdAt: daysAgo(Math.floor(Math.random() * 30)),
-          },
-        });
-
-        // Assign both users as members to every task
-        await prisma.taskMember.createMany({
-          data: [
-            { id: uuid(), taskId, recordId: adminId, packageId: wp.id },
-            { id: uuid(), taskId, recordId: userId, packageId: wp.id },
-          ],
-        });
-
-        // Assign 1-2 random labels
-        const labels = labelMap[wp.id];
-        const numLabels = 1 + Math.floor(Math.random() * 2);
-        const shuffled = [...labels].sort(() => Math.random() - 0.5);
-        for (let l = 0; l < numLabels && l < shuffled.length; l++) {
-          await prisma.taskLabel.create({
-            data: { id: uuid(), taskId, labelId: shuffled[l], packageId: wp.id },
-          });
-        }
-
-        // Add a comment to some tasks
-        if (taskCount % 3 === 0) {
-          await prisma.taskComment.create({
-            data: {
-              id: uuid(),
-              taskId,
-              userId: adminId,
-              message: `This task looks good. Let's proceed with the implementation.`,
-            },
-          });
-        }
-      }
-    }
-  }
-
-  // ─── MESSENGER CHANNELS ─────────────────────────────────
-  const channelId1 = uuid();
-  const channelId2 = uuid();
-
-  await prisma.channel.createMany({
-    data: [
-      { id: channelId1, userId: adminId, type: 1, title: '' },
-      { id: channelId2, userId: adminId, type: 2, rootId: projectIds.platform, title: 'Platform Chat' },
-    ],
+  const projectId = uuid();
+  await prisma.project.create({
+    data: {
+      id: projectId,
+      userId: adminId,
+      groupId: groupId,
+      title: 'Global Nexus ERP v2.0',
+      description: 'A comprehensive ERP suite integrating finance, logistics, and customer experience.',
+      complex: true,
+      premium: true,
+    },
   });
 
-  await prisma.channelMember.createMany({
-    data: [
-      { id: uuid(), channelId: channelId1, userId: adminId },
-      { id: uuid(), channelId: channelId1, userId: userId },
-      { id: uuid(), channelId: channelId2, userId: adminId },
-      { id: uuid(), channelId: channelId2, userId: userId },
-    ],
+  await prisma.projectMember.createMany({
+    data: userRecords.map(u => ({
+      id: uuid(),
+      recordId: u.id,
+      projectId: projectId,
+      access: u.email === 'admin@asoode.com' ? 1 : 4,
+    })),
   });
 
-  // Add some messages
-  const messages = [
-    { channelId: channelId1, userId: adminId, message: 'Hey, how is the project going?' },
-    { channelId: channelId1, userId: userId, message: 'Going well! Almost done with the API.' },
-    { channelId: channelId1, userId: adminId, message: 'Great work! Let me know if you need help.' },
-    { channelId: channelId2, userId: adminId, message: 'Welcome to the Platform Chat channel.' },
-    { channelId: channelId2, userId: userId, message: 'Thanks! Excited to collaborate here.' },
+  // ─── SUB-PROJECTS ───────────────────────────────────────
+  const subProjDefs = [
+    { key: 'FIN', title: 'Core Finance & Accounting', desc: 'Financial ledgers, tax compliance, and auditing.' },
+    { key: 'CX', title: 'Customer Experience Suite', desc: 'Portals, mobile apps, and user interaction layers.' },
+    { key: 'LOG', title: 'Logistics & Data Analytics', desc: 'Warehouse management, fleet tracking, and BI.' },
   ];
 
-  for (let i = 0; i < messages.length; i++) {
-    await prisma.conversation.create({
+  const subProjIds: Record<string, string> = {};
+  for (const spd of subProjDefs) {
+    const spId = uuid();
+    subProjIds[spd.key] = spId;
+    await prisma.subProject.create({
       data: {
-        id: uuid(),
-        ...messages[i],
-        type: 1,
-        createdAt: daysAgo(messages.length - i),
+        id: spId,
+        userId: adminId,
+        projectId: projectId,
+        title: spd.title,
+        description: spd.desc,
       },
     });
   }
 
-  // ─── FILE ENTRIES ───────────────────────────────────────
-  await prisma.fileEntry.createMany({
-    data: [
-      { id: uuid(), userId: adminId, name: 'Documents', path: '/Documents/', isFolder: true },
-      { id: uuid(), userId: adminId, name: 'Images', path: '/Images/', isFolder: true },
-      { id: uuid(), userId: adminId, name: 'project-plan.pdf', path: '/Documents/project-plan.pdf', extension: 'pdf', size: 1048576 },
-      { id: uuid(), userId: adminId, name: 'meeting-notes.docx', path: '/Documents/meeting-notes.docx', extension: 'docx', size: 524288 },
-      { id: uuid(), userId: userId, name: 'My Files', path: '/My Files/', isFolder: true },
-      { id: uuid(), userId: userId, name: 'report.xlsx', path: '/My Files/report.xlsx', extension: 'xlsx', size: 262144 },
-    ],
-  });
+  // ─── WORK PACKAGES (BOARDS) ────────────────────────────
+  const wpConfigs = [
+    { sp: 'FIN', title: 'Tax Compliance & Audit', color: '#f44336' },
+    { sp: 'FIN', title: 'Invoicing & Payments', color: '#e91e63' },
+    { sp: 'FIN', title: 'Financial BI', color: '#9c27b0' },
+    { sp: 'CX', title: 'Public Portal Shell', color: '#673ab7' },
+    { sp: 'CX', title: 'Mobile App Refactor', color: '#3f51b5' },
+    { sp: 'CX', title: 'Support & CRM', color: '#2196f3' },
+    { sp: 'LOG', title: 'Warehouse Ops (WMS)', color: '#009688' },
+    { sp: 'LOG', title: 'Fleet Monitoring', color: '#4caf50' },
+    { sp: 'LOG', title: 'Data Engineering', color: '#ff9800' },
+  ];
 
-  // ─── DEVICES ────────────────────────────────────────────
-  await prisma.device.createMany({
-    data: [
-      { id: uuid(), userId: adminId, title: 'MacBook Pro', os: 'macOS' },
-      { id: uuid(), userId: adminId, title: 'iPhone 15', os: 'iOS' },
-      { id: uuid(), userId: userId, title: 'Windows Desktop', os: 'Windows' },
-    ],
-  });
+  const wpIds: Record<string, string> = {};
+  for (let i = 0; i < wpConfigs.length; i++) {
+    const wpId = uuid();
+    const cfg = wpConfigs[i];
+    wpIds[cfg.title] = wpId;
+    await prisma.workPackage.create({
+      data: {
+        id: wpId,
+        userId: adminId,
+        projectId: projectId,
+        subProjectId: subProjIds[cfg.sp],
+        title: cfg.title,
+        order: i,
+        color: cfg.color,
+      },
+    });
+
+    await prisma.workPackageMember.createMany({
+      data: userRecords.map(u => ({
+        id: uuid(),
+        recordId: u.id,
+        packageId: wpId,
+        access: u.email === 'admin@asoode.com' ? 1 : 4,
+      })),
+    });
+  }
+
+  // ─── LABELS ─────────────────────────────────────────────
+  const labels = [
+    { title: 'Critical', color: '#d32f2f' },
+    { title: 'High', color: '#f44336' },
+    { title: 'Feature', color: '#2196f3' },
+    { title: 'Bug', color: '#e91e63' },
+    { title: 'UI/UX', color: '#9c27b0' },
+    { title: 'Security', color: '#607d8b' },
+    { title: 'Data', color: '#00bcd4' },
+    { title: 'Automated', color: '#4caf50' },
+  ];
+
+  const wpLabels: Record<string, Record<string, string>> = {};
+  for (const wpTitle of Object.keys(wpIds)) {
+    wpLabels[wpTitle] = {};
+    for (const lbl of labels) {
+      const lid = uuid();
+      wpLabels[wpTitle][lbl.title] = lid;
+      await prisma.workPackageLabel.create({
+        data: { id: lid, packageId: wpIds[wpTitle], title: lbl.title, color: lbl.color },
+      });
+    }
+  }
+
+  // ─── LISTS ──────────────────────────────────────────────
+  const lists = ['Backlog', 'To Do', 'In Progress', 'In Review', 'Done'];
+  const listIds: Record<string, Record<string, string>> = {};
+
+  for (const [wpTitle, wpId] of Object.entries(wpIds)) {
+    listIds[wpTitle] = {};
+    for (let j = 0; j < lists.length; j++) {
+      const lid = uuid();
+      listIds[wpTitle][lists[j]] = lid;
+      await prisma.workPackageList.create({
+        data: { id: lid, packageId: wpId, title: lists[j], order: j },
+      });
+    }
+  }
+
+  // ─── TASK GENERATION ────────────────────────────────────
+  const taskPool = [
+    // FINANCE - Tax Compliance
+    { wp: 'Tax Compliance & Audit', list: 'Done', title: 'VAT Calculation Engine Revamp', labels: ['Critical', 'Data'], assignees: ['aslan@asoode.com'] },
+    { wp: 'Tax Compliance & Audit', list: 'In Progress', title: 'Audit Trail Snapshot logic', labels: ['Security'], assignees: ['kianfar@asoode.com'] },
+    { wp: 'Tax Compliance & Audit', list: 'To Do', title: 'Monthly Tax Report Export (CSV/PDF)', labels: ['Feature'], assignees: ['tester'] },
+    { wp: 'Tax Compliance & Audit', list: 'Backlog', title: 'Integration with EU Vies API', labels: ['Data'], assignees: ['aslan@asoode.com'] },
+    { wp: 'Tax Compliance & Audit', list: 'In Review', title: 'Secure Key Rotation for Audits', labels: ['Security', 'Critical'], assignees: ['admin@asoode.com'] },
+    { wp: 'Tax Compliance & Audit', list: 'Done', title: 'Initial GDPR Audit Compliance Check', labels: ['Automated'], assignees: ['tester'] },
+    { wp: 'Tax Compliance & Audit', list: 'To Do', title: 'Implement JWT session for auditors', labels: ['Security'], assignees: ['kianfar@asoode.com'] },
+
+    // FINANCE - Invoicing
+    { wp: 'Invoicing & Payments', list: 'In Progress', title: 'Stripe Connect Onboarding Flow', labels: ['Feature', 'UI/UX'], assignees: ['navid_ux', 'aslan@asoode.com'] },
+    { wp: 'Invoicing & Payments', list: 'Done', title: 'PDF Invoice Template Generation', labels: ['Feature'], assignees: ['navid_ux'] },
+    { wp: 'Invoicing & Payments', list: 'Backlog', title: 'Crypto Payment Support (L2 Bitcoin)', labels: ['Feature', 'High'], assignees: ['admin@asoode.com'] },
+    { wp: 'Invoicing & Payments', list: 'To Do', title: 'Fix: Decimal rounding in multi-currency', labels: ['Bug', 'Critical'], assignees: ['aslan@asoode.com'] },
+    { wp: 'Invoicing & Payments', list: 'In Review', title: 'Webhook handler for failed subs', labels: ['Bug'], assignees: ['tester'] },
+    { wp: 'Invoicing & Payments', list: 'Done', title: 'Automated dunning emails for arrears', labels: ['Automated'], assignees: ['admin@asoode.com'] },
+    { wp: 'Invoicing & Payments', list: 'In Progress', title: 'Ledger correction UI for admins', labels: ['UI/UX'], assignees: ['navid_ux'] },
+
+    // FINANCE - BI
+    { wp: 'Financial BI', list: 'To Do', title: 'Real-time Profit/Loss Dashboard', labels: ['Feature', 'UI/UX'], assignees: ['navid_ux'] },
+    { wp: 'Financial BI', list: 'Backlog', title: 'Predictive Cashflow Modeling using H2O.ai', labels: ['Data', 'Feature'], assignees: ['admin@asoode.com'] },
+    { wp: 'Financial BI', list: 'In Progress', title: 'Cube.js implementation for caching', labels: ['Data', 'High'], assignees: ['kianfar@asoode.com'] },
+    { wp: 'Financial BI', list: 'Done', title: 'Fix: Database lock on heavy report gen', labels: ['Bug', 'Critical'], assignees: ['aslan@asoode.com'] },
+
+    // CX - Public Portal
+    { wp: 'Public Portal Shell', list: 'In Progress', title: 'Next.js 14 App Router Migration', labels: ['Feature', 'High'], assignees: ['aslan@asoode.com'] },
+    { wp: 'Public Portal Shell', list: 'To Do', title: 'SEO Metadata dynamic injection', labels: ['Feature'], assignees: ['navid_ux'] },
+    { wp: 'Public Portal Shell', list: 'Done', title: 'Landing Page Accessibility Audit (WCAG 2.1)', labels: ['UI/UX', 'Automated'], assignees: ['tester'] },
+    { wp: 'Public Portal Shell', list: 'In Review', title: 'CSS variable cleanup for Dark Mode', labels: ['UI/UX'], assignees: ['navid_ux'] },
+    { wp: 'Public Portal Shell', list: 'Backlog', title: 'PWA support for portal users', labels: ['Feature'], assignees: ['aslan@asoode.com'] },
+
+    // CX - Mobile
+    { wp: 'Mobile App Refactor', list: 'In Progress', title: 'ReactNative Gesture Handler Upgrade', labels: ['High', 'Bug'], assignees: ['aslan@asoode.com'] },
+    { wp: 'Mobile App Refactor', list: 'To Do', title: 'Push Notification Badge logic (iOS)', labels: ['Feature'], assignees: ['kianfar@asoode.com'] },
+    { wp: 'Mobile App Refactor', list: 'Backlog', title: 'FaceID/Biometric Authentication', labels: ['Security', 'Feature'], assignees: ['admin@asoode.com'] },
+    { wp: 'Mobile App Refactor', list: 'In Review', title: 'Fix: Screen flicker on transition', labels: ['Bug', 'UI/UX'], assignees: ['tester'] },
+    { wp: 'Mobile App Refactor', list: 'Done', title: 'Asset optimization for splash screens', labels: ['UI/UX'], assignees: ['navid_ux'] },
+
+    // CX - Support
+    { wp: 'Support & CRM', list: 'In Progress', title: 'Zendesk API Synchronization', labels: ['Feature'], assignees: ['aslan@asoode.com'] },
+    { wp: 'Support & CRM', list: 'To Do', title: 'Chatbot Intent Mapping (Dialogflow)', labels: ['Data', 'Feature'], assignees: ['admin@asoode.com'] },
+    { wp: 'Support & CRM', list: 'Done', title: 'Fix: Ticket assignment race condition', labels: ['Bug', 'Critical'], assignees: ['kianfar@asoode.com'] },
+    { wp: 'Support & CRM', list: 'In Review', title: 'Customer Feedback Sentiment Analysis', labels: ['Data', 'Automated'], assignees: ['tester'] },
+
+    // LOGISTICS - WMS
+    { wp: 'Warehouse Ops (WMS)', list: 'In Progress', title: 'Barcode Scanner driver integration', labels: ['Feature', 'High'], assignees: ['aslan@asoode.com'] },
+    { wp: 'Warehouse Ops (WMS)', list: 'To Do', title: 'Zone-based stock placement logic', labels: ['Feature'], assignees: ['admin@asoode.com'] },
+    { wp: 'Warehouse Ops (WMS)', list: 'Done', title: 'Inventory Sync with Shopify Store', labels: ['Automated'], assignees: ['kianfar@asoode.com'] },
+    { wp: 'Warehouse Ops (WMS)', list: 'Backlog', title: 'Drone-based stock picking research', labels: ['Feature'], assignees: ['navid_ux'] },
+    { wp: 'Warehouse Ops (WMS)', list: 'In Review', title: 'Fix: OOM on large inventory CSV import', labels: ['Bug', 'Critical'], assignees: ['tester'] },
+
+    // LOGISTICS - Fleet
+    { wp: 'Fleet Monitoring', list: 'In Progress', title: 'Real-time GPS Tracking via MQTT', labels: ['Data', 'Critical'], assignees: ['kianfar@asoode.com'] },
+    { wp: 'Fleet Monitoring', list: 'To Do', title: 'Fuel Efficiency Reporting Dashboard', labels: ['UI/UX', 'Feature'], assignees: ['navid_ux'] },
+    { wp: 'Fleet Monitoring', list: 'Done', title: 'Route Optimization Algorithm (VRP)', labels: ['Data', 'Automated'], assignees: ['aslan@asoode.com'] },
+    { wp: 'Fleet Monitoring', list: 'In Review', title: 'Hardware Integration: ELD OBD-II', labels: ['Feature'], assignees: ['admin@asoode.com'] },
+
+    // LOGISTICS - Data
+    { wp: 'Data Engineering', list: 'In Progress', title: 'ClickHouse Cluster for Events', labels: ['Data', 'Critical'], assignees: ['kianfar@asoode.com'] },
+    { wp: 'Data Engineering', list: 'To Do', title: 'Airflow DAG for nightly syncs', labels: ['Automated'], assignees: ['admin@asoode.com'] },
+    { wp: 'Data Engineering', list: 'Backlog', title: 'Kafka Stream Processing for Alerts', labels: ['Data', 'High'], assignees: ['aslan@asoode.com'] },
+    { wp: 'Data Engineering', list: 'Done', title: 'Database schema migration script (v8)', labels: ['Critical'], assignees: ['kianfar@asoode.com'] },
+  ];
+
+  // Add more generic tasks to reach ~70
+  for (let i = 0; i < 25; i++) {
+    const wpKeys = Object.keys(wpIds);
+    const randWp = wpKeys[Math.floor(Math.random() * wpKeys.length)];
+    const randList = lists[Math.floor(Math.random() * lists.length)];
+    taskPool.push({
+      wp: randWp,
+      list: randList,
+      title: `Task #${1000 + i}: Ongoing Enterprise Maintenance`,
+      labels: ['Automated'],
+      assignees: [userRecords[i % 5].email]
+    });
+  }
+
+  for (let i = 0; i < taskPool.length; i++) {
+    const t = taskPool[i];
+    const taskId = uuid();
+    const wpId = wpIds[t.wp];
+    const lid = listIds[t.wp][t.list];
+    const isDone = t.list === 'Done';
+    const stateMapping: Record<string, number> = { 'Backlog': 1, 'To Do': 1, 'In Progress': 2, 'In Review': 2, 'Done': 3 };
+
+    const assigneeIds = userRecords.filter(m => t.assignees.includes(m.email) || t.assignees.includes(m.username)).map(m => m.id);
+    const creatorId = assigneeIds[0] || adminId;
+
+    // Determine subProjectId from work package
+    const wp = wpConfigs.find(c => c.title === t.wp);
+    const spId = wp ? subProjIds[wp.sp] : null;
+
+    await prisma.workPackageTask.create({
+      data: {
+        id: taskId,
+        userId: creatorId,
+        packageId: wpId,
+        projectId: projectId,
+        subProjectId: spId,
+        listId: lid,
+        title: t.title,
+        description: `Ref: ERP-TASK-${4 + i}. High-level requirements for ${t.title}. Enterprise context included.`,
+        state: stateMapping[t.list] || 1,
+        doneAt: isDone ? daysAgo(Math.floor(Math.random() * 10)) : null,
+        doneUserId: isDone ? creatorId : null,
+        dueAt: i % 4 === 0 ? daysAgo(-1) : (i % 3 === 0 ? daysFuture(7) : null),
+        createdAt: daysAgo(Math.floor(Math.random() * 30)),
+      },
+    });
+
+    for (const aid of assigneeIds) {
+      await prisma.taskMember.create({ data: { id: uuid(), taskId, recordId: aid, packageId: wpId } });
+    }
+
+    for (const lName of t.labels) {
+      const labelId = wpLabels[t.wp][lName];
+      if (labelId) {
+        await prisma.taskLabel.create({ data: { id: uuid(), taskId, labelId, packageId: wpId } });
+      }
+    }
+
+    if (i % 5 === 0) {
+      await prisma.taskComment.create({
+        data: {
+          id: uuid(),
+          taskId,
+          userId: userRecords[i % 5].id,
+          message: `Update on task: ${t.title}. Blockers cleared. Proceeding with phase 2.`,
+        },
+      });
+    }
+  }
 
   console.log('Seed complete!');
-  console.log(`  - 2 users (admin@asoode.com / user@asoode.com, password: 123456)`);
-  console.log(`  - 3 groups`);
-  console.log(`  - 3 projects with 6 work packages`);
-  console.log(`  - ${taskCount} tasks across all work packages`);
-  console.log(`  - 2 messenger channels with sample messages`);
-  console.log(`  - Sample file entries and devices`);
+  console.log(`  - 5 team members.`);
+  console.log(`  - Project "Global Nexus ERP v2.0" with 3 Sub-Projects.`);
+  console.log(`  - 9 work packages initialized.`);
+  console.log(`  - ~${taskPool.length} specialized tasks seeded.`);
 }
 
 main()

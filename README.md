@@ -1,6 +1,6 @@
 # 🚀 Asoode (آسوده)
 
-A modern, high-performance, and real-time project management platform. Built for developers by developers, **Asoode** focuses on ease of use, speed, and real-time collaboration.
+A modern, high-performance, and real-time project management platform. Built for developers by developers, **Asoode** focuses on ease of use, speed, and enterprise-grade collaboration features.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Node](https://img.shields.io/badge/node-%3E%3D20-green.svg)
@@ -9,16 +9,42 @@ A modern, high-performance, and real-time project management platform. Built for
 
 ---
 
-## ✨ Features
+## 🖼️ Visual Tour
 
-- **Work Package Management**: Advanced Kanban boards, list views, and task tracking.
-- **Real-Time Collaboration**: Powered by Socket.io and RabbitMQ for instant updates across all clients.
-- **Project Analytics**: Detailed charts and insights using Chart.js.
-- **Messenger**: Built-in team chat with file sharing and real-time notifications.
-- **File Management**: Integrated file storage and organization (Minio/S3 compatible).
-- **Workflow Automation**: Design and execute automated task workflows.
-- **Multi-Calendar Support**: Full support for Gregorian and Jalali (Persian) calendars.
-- **PWA Ready**: Installable on mobile and desktop devices.
+### Dashboard & Personal Productivity
+| Manager Insights | My Work Dashboard |
+| :---: | :---: |
+| ![Dashboard Manager](screenshots/dashboard-manager.png) | ![My Work](screenshots/dashboard-my-work.png) |
+
+### Advanced Project Management
+| Complex Project Tree | Kanban Board View |
+| :---: | :---: |
+| ![Project Tree](screenshots/complex-project-tree.png) | ![Board View](screenshots/work-package-board-view.png) |
+
+### Automation & Workflows
+| Workflow Designer | Node Editor |
+| :---: | :---: |
+| ![Workflow Designer](screenshots/work-flow-designer.png) | ![Node Editor](screenshots/work-flow-node-editor.png) |
+
+---
+
+## ✨ Key Features
+
+- **Hierarchical Project Management**: Organize work with **Sub-Projects** and specialized **Work Packages** (Boards).
+- **Advanced Task Tracking**: Kanban boards, detailed list views, and rich task metadata (Labels, Assignees, Due Dates).
+- **Workflow Automation**: A powerful node-based designer to automate repetitive tasks:
+    - **Triggers**: Manual or event-driven execution.
+    - **Standard Actions**: Move tasks, change states, assign members, add comments.
+    - **Notifications**: Instant Email, SMS, or In-app notifications.
+    - **Logic**: Use expressions like `{{nodeId.field}}` for dynamic data flow between nodes.
+- **Enterprise Collaboration**: 
+    - **Messenger**: Built-in team chat with project-linked channels.
+    - **Files**: Integrated file management (S3/Minio compatible) with versioning.
+    - **RBAC**: Granular access control for groups, projects, and boards.
+- **Global Reach**: 
+    - **Multi-Calendar**: Seamless switching between Gregorian and Jalali (Persian) calendars.
+    - **Real-time Engine**: Powered by Socket.io and RabbitMQ for millisecond latency on updates.
+- **Modern UX**: PWA support, Dark/Light modes, and a high-density, focus-oriented interface.
 
 ---
 
@@ -32,7 +58,7 @@ A modern, high-performance, and real-time project management platform. Built for
 - **Framework**: [NestJS](https://nestjs.com/)
 - **ORM**: [Prisma](https://www.prisma.io/)
 - **Database**: [PostgreSQL](https://www.postgresql.org/)
-- **Messaging**: [RabbitMQ](https://www.rabbitmq.com/)
+- **Messaging**: [RabbitMQ](https://www.rabbitmq.com/) (Event-driven architecture)
 - **Storage**: [Minio](https://min.io/) (S3 Compatible)
 
 ### Frontend (apps/frontend, apps/website)
@@ -40,13 +66,12 @@ A modern, high-performance, and real-time project management platform. Built for
 - **UI Kit**: [Vuetify 3](https://vuetifyjs.com/)
 - **State Management**: [Pinia](https://pinia.vuejs.org/)
 - **Real-time**: [Socket.io Client](https://socket.io/)
-- **Architecture**: Clean, modular composables and stores.
 
 ---
 
 ## 🏗️ Architecture
 
-Asoode uses a decoupled, event-driven architecture to ensure high availability and real-time responsiveness.
+Asoode utilizes an event-driven, micro-services inspired architecture to ensure scalability and real-time synchronization.
 
 ```mermaid
 graph TD
@@ -72,7 +97,7 @@ graph TD
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/your-username/asoode.git
+   git clone https://github.com/navid-kianfar/asoode.git
    cd asoode
    ```
 
@@ -81,13 +106,17 @@ graph TD
    pnpm install
    ```
 
-3. **Start Infrastructure (Postgres, RabbitMQ, Minio)**:
+3. **Start Infrastructure**:
    ```bash
    docker-compose up -d
    ```
 
-4. **Environment Variables**:
-   Copy the `.env.example` in each app to `.env` and adjust as needed.
+4. **Initialize Database**:
+   ```bash
+   cd apps/backend
+   npx prisma migrate dev
+   npx prisma db seed # Populates complex enterprise data
+   ```
 
 5. **Run in Development Mode**:
    ```bash
@@ -96,26 +125,9 @@ graph TD
 
 ---
 
-## 🐳 Docker Deployment
-
-Asoode is fully containerized. Images for all services are built and pushed automatically via GitHub Actions.
-
-### Using Docker Compose
-Adjust the `docker-compose.yml` to use the pre-built images:
-```yaml
-services:
-  backend:
-    image: your-username/asoode-backend:latest
-  frontend:
-    image: your-username/asoode-frontend:latest
-  # ... other services
-```
-
----
-
 ## 🤝 Contributing
 
-We welcome contributions! Please follow these steps:
+We welcome contributions! Whether it's a bug fix, a new feature, or documentation improvements:
 1. Fork the project.
 2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`).
 3. Commit your changes (`git commit -m 'Add some AmazingFeature'`).
