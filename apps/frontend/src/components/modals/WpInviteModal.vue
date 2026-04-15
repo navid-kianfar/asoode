@@ -22,15 +22,17 @@
         ref="identifierInput"
         v-model="identifier"
         :label="$t('EMAIL_OR_USERNAME')"
-        :placeholder="$t('EMAIL_OR_USERNAME')"
+        horizontal
         dense
         @keydown.enter="invite"
       />
 
-      <div class="mt-4">
-        <label class="wp-invite-modal__label">{{ $t('ACCESS_LEVEL') }}</label>
-        <AppSelect v-model="access" :items="accessItems" compact />
-      </div>
+      <AppSelect 
+        v-model="access" 
+        :items="accessItems" 
+        :label="$t('ACCESS_LEVEL')"
+        horizontal
+      />
     </div>
 
     <template #footer>
@@ -122,12 +124,5 @@ async function invite() {
 <style lang="scss">
 .wp-invite-modal-body {
   padding: 4px;
-}
-.wp-invite-modal__label {
-  display: block;
-  font-size: 0.78rem;
-  font-weight: 500;
-  color: rgba(var(--v-theme-on-surface), 0.7);
-  margin-bottom: 6px;
 }
 </style>

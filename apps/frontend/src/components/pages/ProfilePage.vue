@@ -43,29 +43,32 @@
               <h2><i class="mdi mdi-account-outline"></i> {{ $t('PERSONAL_INFO') }}</h2>
             </div>
             <div class="settings-section__body">
-              <div class="settings-field">
-                <label>{{ $t('FIRST_NAME') }}</label>
-                <div class="settings-field__input-wrap">
-                  <input v-model="formData.firstName" type="text" autocomplete="off" />
-                  <span v-if="errors.firstName" class="settings-field__error">{{ $t(errors.firstName) }}</span>
-                </div>
+              <div class="settings-grid--2col mb-4">
+                <AppInput
+                  v-model="formData.firstName"
+                  :label="$t('FIRST_NAME')"
+                  dense
+                  :errors="errors.firstName ? [$t(errors.firstName)] : []"
+                />
+                <AppInput
+                  v-model="formData.lastName"
+                  :label="$t('LAST_NAME')"
+                  dense
+                  :errors="errors.lastName ? [$t(errors.lastName)] : []"
+                />
               </div>
-              <div class="settings-field">
-                <label>{{ $t('LAST_NAME') }}</label>
-                <div class="settings-field__input-wrap">
-                  <input v-model="formData.lastName" type="text" autocomplete="off" />
-                  <span v-if="errors.lastName" class="settings-field__error">{{ $t(errors.lastName) }}</span>
-                </div>
-              </div>
-              <div class="settings-field">
-                <label>{{ $t('BIO') }}</label>
-                <div class="settings-field__input-wrap">
-                  <input v-model="formData.bio" type="text" autocomplete="off" :placeholder="$t('BIO')" />
-                </div>
-              </div>
+
+              <AppInput
+                v-model="formData.bio"
+                :label="$t('BIO')"
+                :placeholder="$t('BIO')"
+                dense
+                class="mb-4"
+              />
+
               <div class="settings-field__actions">
                 <button class="btn btn--primary" :disabled="savingProfile" @click="saveProfile">
-                  <i v-if="savingProfile" class="mdi mdi-loading mdi-spin"></i>
+                  <v-icon v-if="savingProfile" start class="mdi-spin">mdi-loading</v-icon>
                   {{ $t('SAVE_CHANGES') }}
                 </button>
               </div>
@@ -111,18 +114,22 @@
               <h2><i class="mdi mdi-tune-variant"></i> {{ $t('PREFERENCES') }}</h2>
             </div>
             <div class="settings-section__body">
-              <div class="settings-field">
-                <label>{{ $t('TIME_ZONE') }}</label>
-                <div class="settings-field__input-wrap">
-                  <AppSelect v-model="formData.timeZone" :items="timezoneItems" :placeholder="$t('TIME_ZONE')" />
-                </div>
+              <div class="settings-grid--2col mb-4">
+                <AppSelect 
+                  v-model="formData.timeZone" 
+                  :items="timezoneItems" 
+                  :label="$t('TIME_ZONE')" 
+                  :placeholder="$t('TIME_ZONE')" 
+                  compact
+                />
+                <AppSelect 
+                  v-model="formData.calendar" 
+                  :items="calendarItems" 
+                  :label="$t('CALENDAR')"
+                  compact
+                />
               </div>
-              <div class="settings-field">
-                <label>{{ $t('CALENDAR') }}</label>
-                <div class="settings-field__input-wrap">
-                  <AppSelect v-model="formData.calendar" :items="calendarItems" />
-                </div>
-              </div>
+
               <div class="settings-field settings-field--toggle">
                 <label>{{ $t('DARK_MODE') }}</label>
                 <button
@@ -135,7 +142,7 @@
               </div>
               <div class="settings-field__actions">
                 <button class="btn btn--primary" :disabled="savingPrefs" @click="savePreferences">
-                  <i v-if="savingPrefs" class="mdi mdi-loading mdi-spin"></i>
+                  <v-icon v-if="savingPrefs" start class="mdi-spin">mdi-loading</v-icon>
                   {{ $t('SAVE_CHANGES') }}
                 </button>
               </div>
@@ -851,6 +858,16 @@ onMounted(async () => {
     .settings-section {
       margin-bottom: 0;
     }
+  }
+}
+
+.settings-grid--2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+
+  @media (max-width: 500px) {
+    grid-template-columns: 1fr;
   }
 }
 

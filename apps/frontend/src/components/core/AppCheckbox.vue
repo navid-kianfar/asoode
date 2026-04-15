@@ -3,6 +3,7 @@
     :model-value="modelValue"
     :label="label"
     :disabled="disabled"
+    density="compact"
     hide-details
     @update:model-value="$emit('update:modelValue', $event)"
   />

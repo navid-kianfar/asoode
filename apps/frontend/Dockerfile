@@ -41,13 +41,25 @@ FROM nginx:alpine AS production
 # Copy the built assets from the build stage
 COPY --from=build /usr/src/app/apps/frontend/dist /usr/share/nginx/html
 
-# Copy custom nginx configuration if provided
-COPY apps/frontend/nginx.conf /etc/nginx/conf.d/default.conf 2>/dev/null || \
-    echo "server { listen 80; location / { root /usr/share/nginx/html; index index.html; try_files \$uri \$uri/ /index.html; } }" > /etc/nginx/conf.d/default.conf
+# 1. Create default nginx configuration
+RUN echo 'server { \
+    listen 80; \
+    location / { \
+        root /usr/share/nginx/html; \
+        index index.html; \
+        try_files $uri $uri/ /index.html; \
+    } \
+}' > /etc/nginx/conf.d/default.conf
 
-# Add entrypoint for potential runtime env injection
-COPY apps/frontend/docker-entrypoint.sh /docker-entrypoint.sh 2>/dev/null || \
-    echo "#!/bin/sh\nexec nginx -g 'daemon off;'" > /docker-entrypoint.sh
+# 2. Overwrite with custom configuration if provided (using wildcard to prevent failure if missing)
+COPY apps/frontend/nginx.con[f] /etc/nginx/conf.d/default.conf
+
+# 3. Create default entrypoint
+RUN echo -e '#!/bin/sh\nexec nginx -g "daemon off;"' > /docker-entrypoint.sh && \
+    chmod +x /docker-entrypoint.sh
+
+# 4. Overwrite with custom entrypoint if provided
+COPY apps/frontend/docker-entrypoint.s[h] /docker-entrypoint.sh
 
 RUN chmod +x /docker-entrypoint.sh
 

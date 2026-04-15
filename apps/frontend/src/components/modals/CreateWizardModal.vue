@@ -4,25 +4,30 @@
     :title="stepTitle"
     :subtitle="stepSubtitle"
     :width="680"
-    :persistent="true"
+    :height="600"
+    :min-height="600"
+    :stable="true"
+    :persistent="false"
     :loading="waiting"
     @close="$emit('close')"
   >
     <template #header>
-      <div v-if="canGoBack" class="cw-header-back-wrap">
-        <v-btn
-          icon
-          size="small"
-          variant="tonal"
-          class="mr-3"
-          @click="goBack"
-        >
-          <v-icon size="18">mdi-arrow-left</v-icon>
-        </v-btn>
-      </div>
-      <div class="app-modal__header-content">
-        <h3 class="app-modal__title">{{ stepTitle }}</h3>
-        <p v-if="stepSubtitle" class="app-modal__subtitle">{{ stepSubtitle }}</p>
+      <div class="d-flex align-start flex-grow-1 min-width-0">
+        <div v-if="canGoBack" class="cw-header-back-wrap">
+          <v-btn
+            icon
+            size="small"
+            variant="tonal"
+            class="mr-3"
+            @click="goBack"
+          >
+            <v-icon size="18">mdi-arrow-left</v-icon>
+          </v-btn>
+        </div>
+        <div class="app-modal__header-content">
+          <h3 class="app-modal__title">{{ stepTitle }}</h3>
+          <p v-if="stepSubtitle" class="app-modal__subtitle">{{ stepSubtitle }}</p>
+        </div>
       </div>
     </template>
 
@@ -144,7 +149,7 @@
       </div>
 
       <!-- ═══ GROUP: FORM ═══ -->
-      <div v-if="mode === 'groupForm'" class="cw-form">
+      <div v-if="mode === 'groupForm'" class="cw-form cw-form--grid">
         <AppInput
           v-model="groupTitle"
           :label="$t('TITLE') + ' *'"
@@ -154,10 +159,13 @@
           autofocus
           @keydown.enter="nextStep"
         />
-        <div class="cw-field">
-          <label class="cw-field__label">{{ $t('TYPE') }}</label>
-          <AppSelect v-model="groupType" :items="groupTypeItems" :disabled="waiting" compact />
-        </div>
+        <AppSelect 
+          v-model="groupType" 
+          :items="groupTypeItems" 
+          :label="$t('TYPE')"
+          :disabled="waiting" 
+          compact 
+        />
         <AppInput
           v-model="groupDescription"
           textArea
@@ -165,6 +173,7 @@
           :label="$t('DESCRIPTION')"
           :placeholder="$t('DESCRIPTION')"
           dense
+          class="cw-form__full"
         />
       </div>
 
@@ -663,6 +672,16 @@ async function finalize() {
   display: flex;
   flex-direction: column;
   gap: 20px;
+
+  &--grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  &__full {
+    grid-column: span 2;
+  }
 }
 
 .cw-field {

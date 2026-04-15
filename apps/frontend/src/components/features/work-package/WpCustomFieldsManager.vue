@@ -84,6 +84,7 @@
                 dense
                 hide-details
                 :placeholder="$t('OPTION_LABEL')"
+                class="flex-grow-1"
               />
               <v-btn
                 icon="mdi-minus-circle-outline"

@@ -181,6 +181,7 @@
         group="tasks"
         :animation="200"
         :disabled="!canEditTask"
+        ghost-class="wp-board-col__ghost"
         @end="$emit('task-drag-end', $event, list)"
       >
         <WpBoardCard
@@ -196,10 +197,7 @@
       <!-- New task inline form (at the bottom of the list) -->
       <div 
         v-if="list._addingTask" 
-        v-click-outside="{ 
-          handler: () => $emit('cancel-new-task', list),
-          include: () => Array.from(document.querySelectorAll('.v-overlay-container')) 
-        }" 
+        v-click-outside="handleTaskCreationOutside" 
         class="wp-board-col__new-task"
       >
         <div class="wp-board-col__new-task-inner">
@@ -589,6 +587,13 @@ function toggleLabel(labelId: string) {
   const index = selectedLabels.value.indexOf(labelId);
   if (index === -1) selectedLabels.value.push(labelId);
   else selectedLabels.value.splice(index, 1);
+}
+
+function handleTaskCreationOutside(e: MouseEvent) {
+  const target = e.target as HTMLElement;
+  // If clicking an overlay (menus, date picker, etc.), do not cancel
+  if (target?.closest('.v-overlay-container')) return;
+  emit('cancel-new-task', props.list);
 }
 
 function onSubmit() {
@@ -1048,6 +1053,22 @@ function onSubmit() {
 .wp-board-date-calendar {
   flex: 1;
   padding: 8px;
+}
+
+// ── Drag Ghost Styling ───────────────────────────────────────────────
+.wp-board-col__ghost {
+  background: rgba(var(--v-theme-primary), 0.05) !important;
+  border: 1px dashed rgba(var(--v-theme-primary), 0.3) !important;
+  border-radius: 8px !important;
+  height: 80px !important;
+  box-shadow: none !important;
+  * { visibility: hidden !important; }
+}
+
+.sortable-drag {
+  opacity: 0.95;
+  transform: rotate(2deg);
+  box-shadow: $shadow-4 !important;
 }
 
 body.dark-mode {

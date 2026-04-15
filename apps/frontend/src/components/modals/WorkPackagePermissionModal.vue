@@ -7,11 +7,6 @@
     @close="$emit('close')"
   >
     <div class="wp-permission-grid">
-      <AppCheckbox v-model="permissions.permissionCreateList" :label="$t('CAN_CREATE_LIST')" />
-      <AppCheckbox v-model="permissions.permissionEditList" :label="$t('CAN_EDIT_LIST')" />
-      <AppCheckbox v-model="permissions.permissionArchiveList" :label="$t('CAN_ARCHIVE_LIST')" />
-      <v-divider class="my-2 grid-full-width" />
-      <AppCheckbox v-model="permissions.permissionCreateTask" :label="$t('CAN_CREATE_TASK')" />
       <AppCheckbox v-model="permissions.permissionEditTask" :label="$t('CAN_EDIT_TASK')" />
       <AppCheckbox v-model="permissions.permissionArchiveTask" :label="$t('CAN_ARCHIVE_TASK')" />
       <AppCheckbox v-model="permissions.permissionChangeTaskState" :label="$t('CAN_EDIT_TASK_STATE')" />
@@ -90,18 +85,20 @@ async function save() {
 .wp-permission-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px;
+  gap: 2px;
   padding: 4px;
 
   .grid-full-width {
     grid-column: 1 / -1;
+    margin: 8px 0;
   }
 }
 
 @media (min-width: 600px) {
   .wp-permission-grid {
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
+    column-gap: 24px;
+    row-gap: 4px;
   }
 }
 </style>

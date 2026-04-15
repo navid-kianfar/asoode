@@ -7,25 +7,34 @@
     @close="$emit('close')"
   >
     <div class="wp-sort-order-modal-body">
-      <div class="wp-sort-order-modal__field">
-        <label class="wp-sort-order-modal__label">{{ $t('LISTS_SORT') }}</label>
-        <AppSelect v-model="sortForm.listsSort" :items="sortTypeItems" compact />
-      </div>
+      <AppSelect 
+        v-model="sortForm.listsSort" 
+        :items="sortTypeItems" 
+        :label="$t('LISTS_SORT')" 
+        horizontal 
+      />
 
-      <div class="wp-sort-order-modal__field">
-        <label class="wp-sort-order-modal__label">{{ $t('TASKS_SORT') }}</label>
-        <AppSelect v-model="sortForm.tasksSort" :items="sortTypeItems" compact />
-      </div>
+      <AppSelect 
+        v-model="sortForm.tasksSort" 
+        :items="sortTypeItems" 
+        :label="$t('TASKS_SORT')" 
+        horizontal 
+      />
 
-      <div class="wp-sort-order-modal__field">
-        <label class="wp-sort-order-modal__label">{{ $t('SUB_TASKS_SORT') }}</label>
-        <AppSelect v-model="sortForm.subTasksSort" :items="sortTypeItems" compact />
-      </div>
+      <AppSelect 
+        v-model="sortForm.subTasksSort" 
+        :items="sortTypeItems" 
+        :label="$t('SUB_TASKS_SORT')" 
+        horizontal 
+      />
 
-      <div class="wp-sort-order-modal__field mb-0">
-        <label class="wp-sort-order-modal__label">{{ $t('ATTACHMENTS_SORT') }}</label>
-        <AppSelect v-model="sortForm.attachmentsSort" :items="sortTypeItems" compact />
-      </div>
+      <AppSelect 
+        v-model="sortForm.attachmentsSort" 
+        :items="sortTypeItems" 
+        :label="$t('ATTACHMENTS_SORT')" 
+        horizontal 
+        class="mb-0"
+      />
     </div>
 
     <template #footer>
@@ -100,17 +109,9 @@ async function save() {
 
 <style lang="scss">
 .wp-sort-order-modal-body {
-  padding: 4px;
-}
-.wp-sort-order-modal__field {
-  margin-bottom: 20px;
-  &.mb-0 { margin-bottom: 0; }
-}
-.wp-sort-order-modal__label {
-  display: block;
-  font-size: 0.78rem;
-  font-weight: 500;
-  color: rgba(var(--v-theme-on-surface), 0.7);
-  margin-bottom: 6px;
+  padding: 8px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 </style>

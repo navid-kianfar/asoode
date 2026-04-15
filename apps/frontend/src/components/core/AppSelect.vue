@@ -6,9 +6,12 @@
       'app-select--open': isOpen,
       'app-select--disabled': disabled,
       'app-select--compact': compact,
+      'app-select--has-label': !!label,
+      'app-select--horizontal': horizontal,
     }"
     @keydown="handleKeydown"
   >
+    <label v-if="label" class="app-select__label">{{ label }}</label>
     <button
       type="button"
       ref="triggerRef"
@@ -33,21 +36,21 @@
           :style="dropdownStyle"
           @click.stop
         >
-          <ul class="app-select__options" ref="listRef" role="listbox">
+      <ul class="app-select__options" ref="listRef" role="listbox">
             <li
               v-for="(item, index) in items"
               :key="index"
               role="option"
               class="app-select__option"
               :class="{
-                'app-select__option--active': isEqual(item.value, modelValue),
+                'app-select__option--active': isEqual(resolveValue(item), modelValue),
                 'app-select__option--focused': index === focusedIndex,
               }"
               @click.stop="selectItem(item)"
               @mouseenter="focusedIndex = index"
             >
-              <span class="app-select__option-text">{{ item.text }}</span>
-              <i v-if="isEqual(item.value, modelValue)" class="mdi mdi-check app-select__check" />
+              <span class="app-select__option-text">{{ resolveTitle(item) }}</span>
+              <i v-if="isEqual(resolveValue(item), modelValue)" class="mdi mdi-check app-select__check" />
             </li>
           </ul>
         </div>
@@ -59,21 +62,23 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
 
-interface SelectItem {
-  text: string;
-  value: any;
-}
-
 const props = withDefaults(defineProps<{
   modelValue?: any;
-  items: SelectItem[];
+  items: any[];
+  itemTitle?: string;
+  itemValue?: string;
+  label?: string;
   placeholder?: string;
   disabled?: boolean;
   compact?: boolean;
+  horizontal?: boolean;
 }>(), {
+  itemTitle: 'text',
+  itemValue: 'value',
   placeholder: '',
   disabled: false,
   compact: false,
+  horizontal: false,
 });
 
 const emit = defineEmits<{
@@ -95,13 +100,23 @@ function isEqual(a: any, b: any): boolean {
   return a == b;
 }
 
+function resolveTitle(item: any): string {
+  if (typeof item === 'string' || typeof item === 'number') return String(item);
+  return item[props.itemTitle];
+}
+
+function resolveValue(item: any): any {
+  if (typeof item === 'string' || typeof item === 'number') return item;
+  return item[props.itemValue];
+}
+
 const hasSelection = computed(() => {
-  return props.items.some(i => isEqual(i.value, props.modelValue));
+  return props.items.some(i => isEqual(resolveValue(i), props.modelValue));
 });
 
 const displayText = computed(() => {
-  const found = props.items.find(i => isEqual(i.value, props.modelValue));
-  return found?.text ?? props.placeholder;
+  const found = props.items.find(i => isEqual(resolveValue(i), props.modelValue));
+  return found ? resolveTitle(found) : props.placeholder;
 });
 
 const dropdownStyle = computed(() => ({
@@ -123,7 +138,7 @@ function toggle() {
 
 function open() {
   isOpen.value = true;
-  focusedIndex.value = props.items.findIndex(i => isEqual(i.value, props.modelValue));
+  focusedIndex.value = props.items.findIndex(i => isEqual(resolveValue(i), props.modelValue));
   if (focusedIndex.value === -1) focusedIndex.value = 0;
 
   nextTick(() => {
@@ -138,8 +153,8 @@ function close() {
   openUpward.value = false;
 }
 
-function selectItem(item: SelectItem) {
-  emit('update:modelValue', item.value);
+function selectItem(item: any) {
+  emit('update:modelValue', resolveValue(item));
   close();
 }
 
@@ -263,6 +278,38 @@ watch(() => props.items, () => {
   &--disabled {
     opacity: 0.5;
     pointer-events: none;
+  }
+
+  &__label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: rgba(var(--v-theme-on-surface), 0.82);
+    margin-bottom: 6px;
+    transition: color $transition-fast;
+
+    .app-select--open & {
+      color: $primary;
+    }
+
+    .app-select--horizontal & {
+      margin-bottom: 0;
+      flex: 1;
+      min-width: 0;
+    }
+  }
+
+  &--horizontal {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-md;
+    width: 100%;
+
+    .app-select__trigger {
+      width: 160px;
+      flex-shrink: 0;
+    }
   }
 
   &--open .app-select__arrow {

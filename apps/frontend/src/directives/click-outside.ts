@@ -1,11 +1,11 @@
 import type { Directive } from 'vue';
 
-export const clickOutside: Directive<HTMLElement & { _clickOutsideHandler?: (e: MouseEvent) => void }, () => void> = {
+export const clickOutside: Directive<HTMLElement & { _clickOutsideHandler?: (e: MouseEvent) => void }, (e: MouseEvent) => void> = {
   mounted(el, binding) {
     el._clickOutsideHandler = (e: MouseEvent) => {
       const target = e.target as Node;
       if (!el.contains(target)) {
-        binding.value();
+        binding.value(e);
       }
     };
     // Use setTimeout to avoid catching the same click that opened the dropdown

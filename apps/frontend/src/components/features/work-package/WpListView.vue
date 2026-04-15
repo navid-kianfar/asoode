@@ -13,7 +13,7 @@
     </div>
 
     <!-- Grouped by list -->
-    <div v-for="list in sortedLists" :key="list.id" class="wp-list-view__group">
+    <div v-for="list in localLists" :key="list.id" class="wp-list-view__group">
       <!-- Group header (collapsible) -->
       <div class="wp-list-view__group-header" :style="{ '--group-color': list.color || '#888' }" @click="toggleGroup(list.id)">
         <i :class="expanded[list.id] !== false ? 'mdi mdi-menu-down' : 'mdi mdi-menu-right'"></i>
@@ -283,7 +283,7 @@
     </div>
 
     <!-- Empty state -->
-    <div v-if="!sortedLists.length" class="wp-list-view__empty">
+    <div v-if="!localLists.length" class="wp-list-view__empty">
       <i class="mdi mdi-format-list-bulleted"></i>
       <p>{{ $t('NO_DATA') }}</p>
     </div>
@@ -336,6 +336,27 @@ const selectedLabels = ref<string[]>([]);
 const startAt = ref<Date | undefined>(undefined);
 const dueAt = ref<Date | undefined>(undefined);
 const dateFocus = ref<'start' | 'due'>('due');
+
+// ── Reactive lists for UI state & dragging ──────────────────────────
+const localLists = ref<WorkPackageListViewModel[]>([]);
+
+function syncLocalLists() {
+  const wp = workPackage.value;
+  if (!wp || !wp.lists) return;
+  const listsSort = wp.listsSort ?? SortType.Manual;
+  const tasksSort = wp.tasksSort ?? SortType.Manual;
+  
+  const mapped = (wp.lists || []).map(l => ({
+    ...l,
+    tasks: applySortType([...(l.tasks || [])], tasksSort),
+  }));
+
+  localLists.value = applySortType(mapped, listsSort);
+}
+
+syncLocalLists();
+watch(() => workPackage.value?.lists, syncLocalLists, { deep: true });
+watch(() => [workPackage.value?.listsSort, workPackage.value?.tasksSort], syncLocalLists);
 
 // ── State color mapping ───────────────────────────────────────────────
 const stateColors: Record<number, string> = {
@@ -395,17 +416,6 @@ function applySortType<T extends Record<string, any>>(items: T[], sortType: Sort
   });
 }
 
-// ── Computed: sorted lists with sorted tasks ─────────────────────────
-const sortedLists = computed(() => {
-  const wp = workPackage.value;
-  if (!wp || !wp.lists) return [];
-  const listsSort = wp.listsSort ?? SortType.Manual;
-  const tasksSort = wp.tasksSort ?? SortType.Manual;
-  return applySortType([...wp.lists], listsSort).map(list => ({
-    ...list,
-    tasks: applySortType([...(list.tasks || [])], tasksSort),
-  }));
-});
 
 // ── Group collapse toggle ─────────────────────────────────────────────
 function toggleGroup(listId: string) {

@@ -16,21 +16,21 @@
         @keydown.enter="save"
       />
 
-      <div class="mt-4">
-        <AppInput
-          v-model="description"
-          textArea
-          :rows="3"
-          :label="$t('DESCRIPTION')"
-          :placeholder="$t('DESCRIPTION')"
-          dense
-        />
-      </div>
+      <AppInput
+        v-model="description"
+        textArea
+        :rows="3"
+        :label="$t('DESCRIPTION')"
+        :placeholder="$t('DESCRIPTION')"
+        dense
+      />
 
-      <div class="mt-4">
-        <label class="wp-objective-modal__label">{{ $t('TYPE') }}</label>
-        <AppSelect v-model="type" :items="objectiveTypeItems" compact />
-      </div>
+      <AppSelect 
+        v-model="type" 
+        :items="objectiveTypeItems" 
+        :label="$t('TYPE')"
+        compact 
+      />
     </div>
 
     <template #footer>
@@ -123,12 +123,8 @@ async function save() {
 <style lang="scss">
 .wp-objective-modal-body {
   padding: 4px;
-}
-.wp-objective-modal__label {
-  display: block;
-  font-size: 0.78rem;
-  font-weight: 500;
-  color: rgba(var(--v-theme-on-surface), 0.7);
-  margin-bottom: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 </style>

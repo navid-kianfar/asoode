@@ -2,12 +2,20 @@
   <v-dialog
     v-model="internalValue"
     :width="width || 560"
+    :max-width="maxWidth"
     :persistent="persistent || loading"
     class="app-modal"
-    :class="{ 'app-modal--loading': loading }"
+    :class="[{ 'app-modal--loading': loading, 'app-modal--stable': stable }, contentClass]"
     transition="dialog-bottom-transition"
   >
-    <v-card class="app-modal__card" :elevation="24">
+    <v-card 
+      class="app-modal__card" 
+      :elevation="24"
+      :style="{ 
+        minHeight: minHeight ? (typeof minHeight === 'number' ? minHeight + 'px' : minHeight) : undefined,
+        height: height ? (typeof height === 'number' ? height + 'px' : height) : undefined 
+      }"
+    >
       <!-- Header -->
       <div v-if="title || $slots.header" class="app-modal__header" :class="`app-modal__header--${tone || 'default'}`">
         <slot name="header">
@@ -57,9 +65,14 @@ const props = defineProps<{
   title?: string;
   subtitle?: string;
   width?: string | number;
+  maxWidth?: string | number;
+  minHeight?: string | number;
+  height?: string | number;
   persistent?: boolean;
   loading?: boolean;
   showClose?: boolean;
+  stable?: boolean;
+  contentClass?: string;
   tone?: 'default' | 'primary' | 'warn' | 'success' | 'info' | 'danger';
 }>();
 
@@ -87,6 +100,10 @@ function onClose() {
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+
+  &--stable &__card {
+    min-height: 480px;
   }
 
   &__card {

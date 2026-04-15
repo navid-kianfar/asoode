@@ -3,8 +3,8 @@
     :model-value="modelValue"
     :label="label"
     :items="items"
-    :item-title="'text'"
-    :item-value="'value'"
+    :item-title="itemTitle || 'text'"
+    :item-value="itemValue || 'value'"
     :multiple="multiple"
     :disabled="disabled"
     :loading="loading"
@@ -12,6 +12,10 @@
     :error-messages="errors"
     density="comfortable"
     :hide-details="!errors?.length"
+    variant="outlined"
+    color="primary"
+    rounded="lg"
+    bg-color="surface"
     @update:model-value="$emit('update:modelValue', $event)"
     @update:search="$emit('update:search', $event)"
   />
@@ -23,7 +27,9 @@ import type { ListViewModel } from '@asoode/shared';
 defineProps<{
   modelValue?: any;
   label?: string;
-  items?: ListViewModel[];
+  items?: any[];
+  itemTitle?: string;
+  itemValue?: string;
   multiple?: boolean;
   disabled?: boolean;
   loading?: boolean;

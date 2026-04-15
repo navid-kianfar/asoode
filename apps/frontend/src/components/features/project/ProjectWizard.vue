@@ -129,37 +129,36 @@
     <!-- Step 3: Project details -->
     <template v-if="step === 3">
       <h3 class="text-h6 mb-4">{{ $t('PROJECT_DETAILS') }}</h3>
-      <v-text-field
-        v-model="title"
-        :label="$t('TITLE')"
-        density="compact"
-        autofocus
-        :disabled="creating"
-        :error-messages="titleError ? [$t(titleError)] : []"
-        class="mb-3"
-      />
-      <v-textarea
-        v-model="description"
-        :label="$t('DESCRIPTION')"
-        density="compact"
-        rows="3"
-        :disabled="creating"
-        class="mb-3"
-      />
+      
+      <div class="project-wizard-form">
+        <AppInput
+          v-model="title"
+          :label="$t('TITLE')"
+          dense
+          autofocus
+          :disabled="creating"
+          :errors="titleError ? [$t(titleError)] : []"
+        />
 
-      <!-- Group selector (optional) -->
-      <v-select
-        v-if="groups.length"
-        v-model="selectedGroupId"
-        :items="groupItems"
-        item-title="text"
-        item-value="value"
-        :label="$t('GROUP')"
-        density="compact"
-        clearable
-        :disabled="creating"
-        class="mb-3"
-      />
+        <AppSelect
+          v-if="groups.length"
+          v-model="selectedGroupId"
+          :items="groupItems"
+          :label="$t('GROUP')"
+          compact
+          :disabled="creating"
+        />
+
+        <AppInput
+          v-model="description"
+          textArea
+          :label="$t('DESCRIPTION')"
+          dense
+          :rows="3"
+          :disabled="creating"
+          class="project-wizard-form__full"
+        />
+      </div>
 
       <!-- Summary -->
       <v-card variant="tonal" class="pa-3 mb-4">
@@ -324,6 +323,17 @@ onMounted(() => {
   &--selected {
     border-color: rgb(var(--v-theme-primary)) !important;
     background-color: rgba(var(--v-theme-primary), 0.04);
+  }
+}
+
+.project-wizard-form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+
+  &__full {
+    grid-column: span 2;
   }
 }
 </style>

@@ -11,6 +11,7 @@
       :disabled="!canEditList"
       :animation="200"
       direction="horizontal"
+      ghost-class="wp-board__ghost"
       @end="onListDragEnd"
     >
       <WpBoardColumn
@@ -571,11 +572,23 @@ function onTaskDragEnd(evt: any, _fromList: BoardList) {
 
 // ── Sortable ghost / drag styling ────────────────────────────────────
 .wp-board .sortable-ghost {
-  opacity: 0.35;
+  opacity: 0.1;
+}
+
+.wp-board__ghost {
+  background: rgba(var(--v-theme-primary), 0.05) !important;
+  border: 2px dashed rgba(var(--v-theme-primary), 0.3) !important;
+  border-radius: 12px !important;
+  height: auto !important;
+  min-height: 200px !important;
+  box-shadow: none !important;
+  * { visibility: hidden !important; }
 }
 
 .wp-board .sortable-drag {
-  opacity: 0.9;
+  opacity: 0.95;
+  transform: rotate(2deg);
+  box-shadow: $shadow-4 !important;
 }
 
 // ── Responsive ───────────────────────────────────────────────────────
