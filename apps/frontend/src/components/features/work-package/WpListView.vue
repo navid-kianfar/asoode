@@ -37,6 +37,7 @@
         :disabled="!canEditTask"
         handle=".wp-list-view__drag-handle"
         :data-list-id="list.id"
+        ghost-class="wp-list-view__ghost"
         @end="(evt: any) => onTaskDragEnd(evt, list)"
       >
         <div
@@ -292,6 +293,7 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive, type Ref, type ComputedRef, inject, watch } from 'vue';
+import { VueDraggable } from 'vue-draggable-plus';
 import { useI18n } from 'vue-i18n';
 import AppInput from '@/components/core/AppInput.vue';
 import AppCalendar from '@/components/core/AppCalendar.vue';
@@ -814,13 +816,16 @@ function getAvatarColor(userId: string): string {
     }
   }
 
-  &__drag-zone {
-    min-height: 4px;
+  &__ghost {
+    opacity: 0.4;
+    background: rgba($primary, 0.05) !important;
+    border: 1px dashed rgba($primary, 0.3) !important;
+    * { visibility: hidden !important; }
   }
 
   // ── Sortable ghost ─────────────────────────────────────────────────
   .sortable-ghost {
-    opacity: 0.35;
+    opacity: 0.2;
   }
 
   // ── Status bar ──────────────────────────────────────────────────────
