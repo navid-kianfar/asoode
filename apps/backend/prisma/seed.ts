@@ -1,8 +1,16 @@
 import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
 import * as bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
 
-const prisma = new PrismaClient();
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  throw new Error('DATABASE_URL environment variable is required');
+}
+const pool = new Pool({ connectionString });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 function daysAgo(n: number): Date {
   const d = new Date();
@@ -19,7 +27,6 @@ function daysFuture(n: number): Date {
 async function main() {
   console.log('Seeding database with complex enterprise project data...');
 
-  // ─── CLEAR DATA ──────────────────────────────────────────
   console.log('Clearing old management data...');
   await prisma.taskLabel.deleteMany();
   await prisma.taskMember.deleteMany();
@@ -34,14 +41,12 @@ async function main() {
   await prisma.project.deleteMany();
   await prisma.groupMember.deleteMany();
   await prisma.group.deleteMany();
-  // Clear messenger/files/devices as requested (even if not seeded later)
   await prisma.conversation.deleteMany();
   await prisma.channelMember.deleteMany();
   await prisma.channel.deleteMany();
   await prisma.fileEntry.deleteMany();
   await prisma.device.deleteMany();
 
-  // ─── USERS ──────────────────────────────────────────────
   const passwordHash = await bcrypt.hash('123456', 12);
   const teamMembers = [
     { email: 'admin@asoode.com', username: 'admin', firstName: 'Navid', lastName: 'Kianfar', bio: 'CTO & Platform Architect' },
@@ -62,13 +67,12 @@ async function main() {
   }
   const adminId = userRecords[0].id;
 
-  // ─── GROUP & PROJECT ────────────────────────────────────
   const groupId = uuid();
   await prisma.group.create({
     data: {
       id: groupId,
       userId: adminId,
-      type: 2, // Organization
+      type: 2,
       title: 'Asoode Enterprise Solutions',
       description: 'Global infrastructure for enterprise grade project management.',
       premium: true,
@@ -106,7 +110,6 @@ async function main() {
     })),
   });
 
-  // ─── SUB-PROJECTS ───────────────────────────────────────
   const subProjDefs = [
     { key: 'FIN', title: 'Core Finance & Accounting', desc: 'Financial ledgers, tax compliance, and auditing.' },
     { key: 'CX', title: 'Customer Experience Suite', desc: 'Portals, mobile apps, and user interaction layers.' },
@@ -128,7 +131,6 @@ async function main() {
     });
   }
 
-  // ─── WORK PACKAGES (BOARDS) ────────────────────────────
   const wpConfigs = [
     { sp: 'FIN', title: 'Tax Compliance & Audit', color: '#f44336' },
     { sp: 'FIN', title: 'Invoicing & Payments', color: '#e91e63' },
@@ -168,7 +170,6 @@ async function main() {
     });
   }
 
-  // ─── LABELS ─────────────────────────────────────────────
   const labels = [
     { title: 'Critical', color: '#d32f2f' },
     { title: 'High', color: '#f44336' },
@@ -192,7 +193,6 @@ async function main() {
     }
   }
 
-  // ─── LISTS ──────────────────────────────────────────────
   const lists = ['Backlog', 'To Do', 'In Progress', 'In Review', 'Done'];
   const listIds: Record<string, Record<string, string>> = {};
 
@@ -207,9 +207,7 @@ async function main() {
     }
   }
 
-  // ─── TASK GENERATION ────────────────────────────────────
   const taskPool = [
-    // FINANCE - Tax Compliance
     { wp: 'Tax Compliance & Audit', list: 'Done', title: 'VAT Calculation Engine Revamp', labels: ['Critical', 'Data'], assignees: ['aslan@asoode.com'] },
     { wp: 'Tax Compliance & Audit', list: 'In Progress', title: 'Audit Trail Snapshot logic', labels: ['Security'], assignees: ['kianfar@asoode.com'] },
     { wp: 'Tax Compliance & Audit', list: 'To Do', title: 'Monthly Tax Report Export (CSV/PDF)', labels: ['Feature'], assignees: ['tester'] },
@@ -217,8 +215,6 @@ async function main() {
     { wp: 'Tax Compliance & Audit', list: 'In Review', title: 'Secure Key Rotation for Audits', labels: ['Security', 'Critical'], assignees: ['admin@asoode.com'] },
     { wp: 'Tax Compliance & Audit', list: 'Done', title: 'Initial GDPR Audit Compliance Check', labels: ['Automated'], assignees: ['tester'] },
     { wp: 'Tax Compliance & Audit', list: 'To Do', title: 'Implement JWT session for auditors', labels: ['Security'], assignees: ['kianfar@asoode.com'] },
-
-    // FINANCE - Invoicing
     { wp: 'Invoicing & Payments', list: 'In Progress', title: 'Stripe Connect Onboarding Flow', labels: ['Feature', 'UI/UX'], assignees: ['navid_ux', 'aslan@asoode.com'] },
     { wp: 'Invoicing & Payments', list: 'Done', title: 'PDF Invoice Template Generation', labels: ['Feature'], assignees: ['navid_ux'] },
     { wp: 'Invoicing & Payments', list: 'Backlog', title: 'Crypto Payment Support (L2 Bitcoin)', labels: ['Feature', 'High'], assignees: ['admin@asoode.com'] },
@@ -226,54 +222,39 @@ async function main() {
     { wp: 'Invoicing & Payments', list: 'In Review', title: 'Webhook handler for failed subs', labels: ['Bug'], assignees: ['tester'] },
     { wp: 'Invoicing & Payments', list: 'Done', title: 'Automated dunning emails for arrears', labels: ['Automated'], assignees: ['admin@asoode.com'] },
     { wp: 'Invoicing & Payments', list: 'In Progress', title: 'Ledger correction UI for admins', labels: ['UI/UX'], assignees: ['navid_ux'] },
-
-    // FINANCE - BI
     { wp: 'Financial BI', list: 'To Do', title: 'Real-time Profit/Loss Dashboard', labels: ['Feature', 'UI/UX'], assignees: ['navid_ux'] },
     { wp: 'Financial BI', list: 'Backlog', title: 'Predictive Cashflow Modeling using H2O.ai', labels: ['Data', 'Feature'], assignees: ['admin@asoode.com'] },
     { wp: 'Financial BI', list: 'In Progress', title: 'Cube.js implementation for caching', labels: ['Data', 'High'], assignees: ['kianfar@asoode.com'] },
     { wp: 'Financial BI', list: 'Done', title: 'Fix: Database lock on heavy report gen', labels: ['Bug', 'Critical'], assignees: ['aslan@asoode.com'] },
-
-    // CX - Public Portal
     { wp: 'Public Portal Shell', list: 'In Progress', title: 'Next.js 14 App Router Migration', labels: ['Feature', 'High'], assignees: ['aslan@asoode.com'] },
     { wp: 'Public Portal Shell', list: 'To Do', title: 'SEO Metadata dynamic injection', labels: ['Feature'], assignees: ['navid_ux'] },
     { wp: 'Public Portal Shell', list: 'Done', title: 'Landing Page Accessibility Audit (WCAG 2.1)', labels: ['UI/UX', 'Automated'], assignees: ['tester'] },
     { wp: 'Public Portal Shell', list: 'In Review', title: 'CSS variable cleanup for Dark Mode', labels: ['UI/UX'], assignees: ['navid_ux'] },
     { wp: 'Public Portal Shell', list: 'Backlog', title: 'PWA support for portal users', labels: ['Feature'], assignees: ['aslan@asoode.com'] },
-
-    // CX - Mobile
     { wp: 'Mobile App Refactor', list: 'In Progress', title: 'ReactNative Gesture Handler Upgrade', labels: ['High', 'Bug'], assignees: ['aslan@asoode.com'] },
     { wp: 'Mobile App Refactor', list: 'To Do', title: 'Push Notification Badge logic (iOS)', labels: ['Feature'], assignees: ['kianfar@asoode.com'] },
     { wp: 'Mobile App Refactor', list: 'Backlog', title: 'FaceID/Biometric Authentication', labels: ['Security', 'Feature'], assignees: ['admin@asoode.com'] },
     { wp: 'Mobile App Refactor', list: 'In Review', title: 'Fix: Screen flicker on transition', labels: ['Bug', 'UI/UX'], assignees: ['tester'] },
     { wp: 'Mobile App Refactor', list: 'Done', title: 'Asset optimization for splash screens', labels: ['UI/UX'], assignees: ['navid_ux'] },
-
-    // CX - Support
     { wp: 'Support & CRM', list: 'In Progress', title: 'Zendesk API Synchronization', labels: ['Feature'], assignees: ['aslan@asoode.com'] },
     { wp: 'Support & CRM', list: 'To Do', title: 'Chatbot Intent Mapping (Dialogflow)', labels: ['Data', 'Feature'], assignees: ['admin@asoode.com'] },
     { wp: 'Support & CRM', list: 'Done', title: 'Fix: Ticket assignment race condition', labels: ['Bug', 'Critical'], assignees: ['kianfar@asoode.com'] },
     { wp: 'Support & CRM', list: 'In Review', title: 'Customer Feedback Sentiment Analysis', labels: ['Data', 'Automated'], assignees: ['tester'] },
-
-    // LOGISTICS - WMS
     { wp: 'Warehouse Ops (WMS)', list: 'In Progress', title: 'Barcode Scanner driver integration', labels: ['Feature', 'High'], assignees: ['aslan@asoode.com'] },
     { wp: 'Warehouse Ops (WMS)', list: 'To Do', title: 'Zone-based stock placement logic', labels: ['Feature'], assignees: ['admin@asoode.com'] },
     { wp: 'Warehouse Ops (WMS)', list: 'Done', title: 'Inventory Sync with Shopify Store', labels: ['Automated'], assignees: ['kianfar@asoode.com'] },
     { wp: 'Warehouse Ops (WMS)', list: 'Backlog', title: 'Drone-based stock picking research', labels: ['Feature'], assignees: ['navid_ux'] },
     { wp: 'Warehouse Ops (WMS)', list: 'In Review', title: 'Fix: OOM on large inventory CSV import', labels: ['Bug', 'Critical'], assignees: ['tester'] },
-
-    // LOGISTICS - Fleet
     { wp: 'Fleet Monitoring', list: 'In Progress', title: 'Real-time GPS Tracking via MQTT', labels: ['Data', 'Critical'], assignees: ['kianfar@asoode.com'] },
     { wp: 'Fleet Monitoring', list: 'To Do', title: 'Fuel Efficiency Reporting Dashboard', labels: ['UI/UX', 'Feature'], assignees: ['navid_ux'] },
     { wp: 'Fleet Monitoring', list: 'Done', title: 'Route Optimization Algorithm (VRP)', labels: ['Data', 'Automated'], assignees: ['aslan@asoode.com'] },
     { wp: 'Fleet Monitoring', list: 'In Review', title: 'Hardware Integration: ELD OBD-II', labels: ['Feature'], assignees: ['admin@asoode.com'] },
-
-    // LOGISTICS - Data
     { wp: 'Data Engineering', list: 'In Progress', title: 'ClickHouse Cluster for Events', labels: ['Data', 'Critical'], assignees: ['kianfar@asoode.com'] },
     { wp: 'Data Engineering', list: 'To Do', title: 'Airflow DAG for nightly syncs', labels: ['Automated'], assignees: ['admin@asoode.com'] },
     { wp: 'Data Engineering', list: 'Backlog', title: 'Kafka Stream Processing for Alerts', labels: ['Data', 'High'], assignees: ['aslan@asoode.com'] },
     { wp: 'Data Engineering', list: 'Done', title: 'Database schema migration script (v8)', labels: ['Critical'], assignees: ['kianfar@asoode.com'] },
   ];
 
-  // Add more generic tasks to reach ~70
   for (let i = 0; i < 25; i++) {
     const wpKeys = Object.keys(wpIds);
     const randWp = wpKeys[Math.floor(Math.random() * wpKeys.length)];
@@ -298,7 +279,6 @@ async function main() {
     const assigneeIds = userRecords.filter(m => t.assignees.includes(m.email) || t.assignees.includes(m.username)).map(m => m.id);
     const creatorId = assigneeIds[0] || adminId;
 
-    // Determine subProjectId from work package
     const wp = wpConfigs.find(c => c.title === t.wp);
     const spId = wp ? subProjIds[wp.sp] : null;
 

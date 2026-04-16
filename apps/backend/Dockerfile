@@ -37,12 +37,10 @@ RUN pnpm --filter @asoode/shared build \
 RUN pnpm --filter @asoode/backend deploy --legacy --prod /prod
 
 # Ensure Prisma client is in the production node_modules
-# By default, Prisma generates into node_modules/.prisma/client
-# We copy the entire .prisma directory to the production folder
-RUN mkdir -p /prod/node_modules/.prisma && \
-    cp -r apps/backend/node_modules/.prisma/client /prod/node_modules/.prisma/ 2>/dev/null || \
-    cp -r node_modules/.prisma/client /prod/node_modules/.prisma/ || \
-    echo "No Prisma client found, proceeding anyway (might fail at runtime)"
+# Prisma v7 generates @prisma/client with .prisma subdirectory
+# Copy the entire @prisma/client directory to production
+RUN cp -r /usr/src/app/node_modules/.pnpm/@prisma+client@*/node_modules/@prisma/client /prod/node_modules/@prisma/ 2>/dev/null || \
+    echo "Warning: Prisma client copy may have failed"
 
 # Production stage
 FROM node:22-alpine AS production

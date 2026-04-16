@@ -103,12 +103,12 @@ services:
         condition: service_healthy
 
   frontend:
-    image: kianfar/asoode-frontend:latest
+    image: kainfar/asoode-frontend:latest
     container_name: asoode-frontend
     ports:
       - "80:80"
     environment:
-      VITE_API_URL: http://localhost:3000
+      API_URL: http://localhost:3000
     depends_on:
       - backend
 
