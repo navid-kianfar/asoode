@@ -6,17 +6,20 @@ import { Pool } from 'pg';
 @Injectable({ scope: Scope.DEFAULT })
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(PrismaService.name);
-  private pool: Pool | null = null;
+  private pool: Pool;
 
-  async onModuleInit() {
+  constructor() {
     const connectionString = process.env.DATABASE_URL;
     if (!connectionString) {
-      this.logger.error('DATABASE_URL is not defined');
       throw new Error('DATABASE_URL is required');
     }
-    this.pool = new Pool({ connectionString });
-    const adapter = new PrismaPg(this.pool);
-    Object.assign(this, { adapter });
+    const pool = new Pool({ connectionString });
+    const adapter = new PrismaPg(pool);
+    super({ adapter });
+    this.pool = pool;
+  }
+
+  async onModuleInit() {
     this.logger.log('Connected to PostgreSQL');
   }
 
